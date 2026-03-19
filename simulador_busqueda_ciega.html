@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Búsqueda Ciega — Simulador</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Sora:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #0f0f13;
+  --surface: #1a1a24;
+  --surface2: #22222f;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.15);
+  --text: #f0f0f5;
+  --muted: #8888a0;
+  --accent: #6c63ff;
+  --accent2: #a78bfa;
+  --green: #22d3a0;
+  --red: #f87171;
+  --amber: #fbbf24;
+  --blue: #60a5fa;
+  --pink: #f472b6;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --font: 'Sora', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:20px 16px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.header-title{font-size:18px;font-weight:700;letter-spacing:-.3px;background:linear-gradient(135deg,var(--accent2),var(--blue),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* NAV TABS */
+.nav{display:flex;overflow-x:auto;gap:6px;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav-tab{flex-shrink:0;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:.2s;white-space:nowrap}
+.nav-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* PANELS */
+.panels{padding:16px}
+.panel{display:none}.panel.active{display:block}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.card-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+
+/* ALGO SELECTOR */
+.algo-row{display:flex;gap:8px;margin-bottom:14px}
+.algo-btn{flex:1;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.algo-btn.active{border-color:var(--accent);background:rgba(108,99,255,.15);color:var(--accent2)}
+
+/* SVG GRAPH */
+.graph-wrap{background:var(--surface2);border-radius:var(--radius-sm);padding:10px;margin-bottom:12px;overflow:hidden}
+
+/* DATA STRUCTURES */
+.ds-row{display:flex;gap:8px;flex-wrap:wrap;min-height:36px;align-items:center}
+.ds-item{padding:5px 10px;border-radius:var(--radius-sm);font-size:12px;font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);color:var(--text);transition:.3s}
+.ds-item.cur{background:rgba(108,99,255,.2);border-color:var(--accent);color:var(--accent2)}
+.ds-item.vis{background:rgba(34,211,160,.1);border-color:var(--green);color:var(--green)}
+.ds-empty{font-size:11px;color:var(--muted);font-style:italic}
+
+/* ACTION BOX */
+.action-box{background:var(--surface2);border-radius:var(--radius-sm);padding:12px;font-size:13px;color:var(--text);line-height:1.6;min-height:52px;border-left:3px solid var(--accent);margin-bottom:12px}
+
+/* CONTROLS */
+.controls{display:flex;gap:8px;align-items:center;justify-content:center;margin:4px 0 12px}
+.ctrl-btn{padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:.15s;flex:1;max-width:120px}
+.ctrl-btn:disabled{opacity:.3;cursor:default}
+.ctrl-btn:active:not(:disabled){transform:scale(.97)}
+.ctrl-play{background:var(--accent);border-color:var(--accent);color:#fff;max-width:100px}
+.step-info{font-size:12px;color:var(--muted);min-width:50px;text-align:center}
+
+/* COUNTERS */
+.counter-row{display:flex;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.counter{flex:1;text-align:center}
+.counter-val{font-size:24px;font-weight:700;color:var(--text)}
+.counter-lbl{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* CODE */
+.codeline{padding:3px 8px;border-radius:4px;font-size:11px;font-family:var(--mono);color:var(--muted);line-height:1.9;transition:.2s}
+.codeline.hl{background:rgba(108,99,255,.2);color:var(--accent2)}
+
+/* JARS */
+.jars-wrap{display:flex;gap:24px;align-items:flex-end;justify-content:center;padding:16px 0}
+.jar-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.jar-label-top{font-size:22px;font-weight:700;color:var(--text)}
+.jar-body{position:relative;border:2.5px solid var(--border2);border-top:none;border-radius:0 0 10px 10px;background:var(--surface2);overflow:hidden}
+.jar-water{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,#60a5fa88,#3b82f6);transition:height .6s cubic-bezier(.4,0,.2,1)}
+.jar-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--text);z-index:1;font-family:var(--mono)}
+.jar-label-bot{font-size:11px;color:var(--muted)}
+.jar-action{display:flex;flex-direction:column;align-items:center;padding-bottom:40px;gap:6px}
+.jar-arrow{font-size:32px;color:var(--accent2);transition:.3s}
+.jar-aname{font-size:12px;font-weight:600;color:var(--accent2);text-align:center}
+
+/* DEVS */
+.servers{display:flex;gap:10px;align-items:stretch;margin-bottom:12px}
+.server{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px}
+.server-title{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.entities{display:flex;flex-wrap:wrap;gap:5px;min-height:28px;align-items:center}
+.entity{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:.3s}
+.dev-e{background:rgba(96,165,250,.2);border:1.5px solid var(--blue);color:var(--blue)}
+.bug-e{background:rgba(248,113,113,.2);border:1.5px solid var(--red);color:var(--red)}
+.vehicle-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:80px;gap:8px}
+.vehicle-box{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:10px;min-width:64px;text-align:center}
+.vehicle-title{font-size:9px;color:var(--muted);margin-bottom:4px}
+.vehicle-arrow{font-size:24px;color:var(--accent2);transition:.3s}
+.vehicle-loc{font-size:10px;color:var(--muted)}
+.state-box{background:var(--surface2);border-radius:var(--radius-sm);padding:10px;font-family:var(--mono);font-size:16px;font-weight:600;color:var(--accent2);text-align:center;margin-bottom:10px}
+
+/* FLASHCARDS */
+.fc-wrap{perspective:1000px;height:200px;margin-bottom:14px;cursor:pointer}
+.fc-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.fc-wrap.flipped .fc-inner{transform:rotateY(180deg)}
+.fc-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border:1px solid var(--border2);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:var(--surface)}
+.fc-back{transform:rotateY(180deg);background:var(--surface2);border-color:var(--accent)}
+.fc-tag{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.fc-q{font-size:16px;font-weight:600;color:var(--text);line-height:1.5}
+.fc-a{font-size:13px;color:var(--text);line-height:1.6}
+.fc-hint{font-size:11px;color:var(--muted);margin-top:8px}
+.prog-bar-wrap{height:3px;background:var(--surface2);border-radius:2px;margin-bottom:14px}
+.prog-bar{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
+
+/* QUIZ */
+.quiz-q{font-size:15px;font-weight:600;color:var(--text);margin-bottom:14px;line-height:1.6}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.quiz-opt{padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;color:var(--text);background:var(--surface2);text-align:left;cursor:pointer;transition:.2s;font-family:var(--font)}
+.quiz-opt:active:not(:disabled){transform:scale(.99)}
+.quiz-opt.correct{border-color:var(--green);background:rgba(34,211,160,.1);color:var(--green)}
+.quiz-opt.wrong{border-color:var(--red);background:rgba(248,113,113,.1);color:var(--red)}
+.quiz-fb{display:none;padding:12px;border-radius:var(--radius-sm);font-size:13px;line-height:1.6;margin-bottom:12px;border-left:3px solid}
+.quiz-fb.ok{display:block;background:rgba(34,211,160,.1);border-color:var(--green);color:var(--green)}
+.quiz-fb.fail{display:block;background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}
+.quiz-next{display:none;width:100%;padding:12px;border-radius:var(--radius-sm);background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer}
+.quiz-next.show{display:block}
+.score-box{text-align:center;padding:32px 16px}
+.score-num{font-size:56px;font-weight:700;background:linear-gradient(135deg,var(--accent2),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.score-sub{font-size:14px;color:var(--muted);margin-top:8px}
+.score-restart{margin-top:20px;padding:12px 28px;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer}
+
+/* COMPARE TABLE */
+.ctable{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px}
+.ctable th{padding:10px 10px;background:var(--surface2);color:var(--muted);font-weight:600;text-align:left;border-bottom:1px solid var(--border);font-size:11px}
+.ctable td{padding:10px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top}
+.ctable tr:last-child td{border-bottom:none}
+.ctable td:first-child{color:var(--muted);font-weight:600;font-size:11px;white-space:nowrap}
+.yes{color:var(--green);font-weight:600}.no{color:var(--red);font-weight:600}.maybe{color:var(--amber);font-weight:600}
+.hi td{background:rgba(108,99,255,.07)}
+
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.b-green{background:rgba(34,211,160,.15);color:var(--green);border:1px solid rgba(34,211,160,.3)}
+.b-red{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+.b-amber{background:rgba(251,191,36,.15);color:var(--amber);border:1px solid rgba(251,191,36,.3)}
+.b-blue{background:rgba(96,165,250,.15);color:var(--blue);border:1px solid rgba(96,165,250,.3)}
+
+/* TRAMPA */
+.trampa-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.trampa-tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3);margin-bottom:8px}
+.trampa-q{font-size:14px;font-weight:500;color:var(--text);line-height:1.6;margin-bottom:10px}
+.trampa-toggle{padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;width:100%}
+.trampa-ans{display:none;margin-top:10px;padding:12px;background:rgba(248,113,113,.07);border-radius:var(--radius-sm);font-size:13px;color:var(--text);line-height:1.7;border-left:3px solid var(--red)}
+.trampa-ans.show{display:block}
+.trampa-ans b{color:var(--red)}
+
+.section-sep{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:8px 0 6px;border-bottom:1px solid var(--border);margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">Búsqueda Ciega — Simulador</div>
+  <div class="header-sub">IA · Práctica 2 · Rodrigo · Brandon · René</div>
+</div>
+
+<nav class="nav">
+  <button class="nav-tab active" onclick="show('graph',this)">Grafo</button>
+  <button class="nav-tab" onclick="show('jars',this)">Jarras</button>
+  <button class="nav-tab" onclick="show('devs',this)">Devs & Bugs</button>
+  <button class="nav-tab" onclick="show('ucs',this)">UCS</button>
+  <button class="nav-tab" onclick="show('iddfs',this)">IDDFS</button>
+  <button class="nav-tab" onclick="show('flash',this)">Flashcards</button>
+  <button class="nav-tab" onclick="show('quiz',this)">Examen</button>
+  <button class="nav-tab" onclick="show('compare',this)">Comparar</button>
+  <button class="nav-tab" onclick="show('trampa',this)">Trampas</button>
+</nav>
+
+<div class="panels">
+
+<!-- ───── GRAPH ───── -->
+<div class="panel active" id="p-graph">
+  <div class="algo-row">
+    <button class="algo-btn active" id="abfs" onclick="setAlgo('bfs')">BFS — Cola FIFO</button>
+    <button class="algo-btn" id="adfs" onclick="setAlgo('dfs')">DFS — Pila LIFO</button>
+  </div>
+  <div class="graph-wrap">
+    <svg id="gsvg" viewBox="0 0 340 150" width="100%" height="150">
+      <defs>
+        <marker id="m0" markerWidth="7" markerHeight="7" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#444"/></marker>
+        <marker id="mg" markerWidth="7" markerHeight="7" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#22d3a0"/></marker>
+        <marker id="ma" markerWidth="7" markerHeight="7" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#fbbf24"/></marker>
+      </defs>
+      <line id="eAB" x1="74" y1="88" x2="145" y2="88" stroke="#333" stroke-width="2" marker-end="url(#m0)"/>
+      <line id="eBC" x1="193" y1="88" x2="258" y2="88" stroke="#333" stroke-width="2" marker-end="url(#m0)"/>
+      <path id="eCA" d="M252,72 Q175,10 88,72" stroke="#333" stroke-width="2" fill="none" marker-end="url(#m0)"/>
+      <line id="eCG" x1="284" y1="72" x2="305" y2="48" stroke="#333" stroke-width="2" marker-end="url(#m0)"/>
+      <g id="nA"><circle cx="52" cy="88" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="52" y="93" text-anchor="middle" font-size="16" font-weight="700" fill="#888" font-family="Sora,sans-serif">A</text></g>
+      <g id="nB"><circle cx="169" cy="88" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="169" y="93" text-anchor="middle" font-size="16" font-weight="700" fill="#888" font-family="Sora,sans-serif">B</text></g>
+      <g id="nC"><circle cx="274" cy="88" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="274" y="93" text-anchor="middle" font-size="16" font-weight="700" fill="#888" font-family="Sora,sans-serif">C</text></g>
+      <g id="nG"><circle cx="322" cy="30" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="322" y="35" text-anchor="middle" font-size="16" font-weight="700" fill="#888" font-family="Sora,sans-serif">G</text></g>
+      <text x="52" y="118" text-anchor="middle" font-size="9" fill="#444" font-family="Sora,sans-serif">inicio</text>
+      <text x="322" y="60" text-anchor="middle" font-size="9" fill="#444" font-family="Sora,sans-serif">meta</text>
+    </svg>
+  </div>
+  <div class="card">
+    <div class="card-title" id="ds-title">Cola (FIFO) — Frontera</div>
+    <div class="ds-row" id="dsF"></div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+      <div class="card-title">Visitados { }</div>
+      <div class="ds-row" id="dsV"></div>
+    </div>
+    <div class="counter-row">
+      <div class="counter"><div class="counter-val" id="cg">0</div><div class="counter-lbl">generados</div></div>
+      <div class="counter"><div class="counter-val" id="ce">0</div><div class="counter-lbl">expandidos</div></div>
+    </div>
+  </div>
+  <div class="action-box" id="g-act">Presiona Siguiente → para comenzar paso a paso.</div>
+  <div class="controls">
+    <button class="ctrl-btn" onclick="gStep(-1)" id="gp" disabled>← Ant.</button>
+    <span class="step-info" id="gc">1/8</span>
+    <button class="ctrl-btn" onclick="gStep(1)" id="gn">Sig. →</button>
+    <button class="ctrl-btn ctrl-play" onclick="gPlay()" id="gplay">▶</button>
+  </div>
+  <div class="card">
+    <div class="card-title" id="code-title">Pseudocódigo — BFS</div>
+    <div id="codeblock"></div>
+  </div>
+</div>
+
+<!-- ───── JARS ───── -->
+<div class="panel" id="p-jars">
+  <div class="action-box" id="j-act">BFS sobre las Jarras. Grande: 5L | Pequeña: 3L. Meta: 2L en la grande.</div>
+  <div class="jars-wrap">
+    <div class="jar-wrap">
+      <div class="jar-label-top" id="jbv">0L</div>
+      <div class="jar-body" style="width:90px;height:140px">
+        <div class="jar-water" id="jbw" style="height:0%"></div>
+        <div class="jar-text" id="jbl">0/5</div>
+      </div>
+      <div class="jar-label-bot">Grande (5L)</div>
+    </div>
+    <div class="jar-action">
+      <div class="jar-arrow" id="jarr">↔</div>
+      <div class="jar-aname" id="janame"></div>
+    </div>
+    <div class="jar-wrap">
+      <div class="jar-label-top" id="jsv">0L</div>
+      <div class="jar-body" style="width:66px;height:96px">
+        <div class="jar-water" id="jsw" style="height:0%"></div>
+        <div class="jar-text" id="jsl">0/3</div>
+      </div>
+      <div class="jar-label-bot">Pequeña (3L)</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Cola BFS — Frontera (grande, pequeña)</div>
+    <div class="ds-row" id="jfront"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Visitados</div>
+    <div class="ds-row" id="jvis"></div>
+  </div>
+  <div class="controls">
+    <button class="ctrl-btn" onclick="jStep(-1)">← Ant.</button>
+    <span class="step-info" id="jc">1/7</span>
+    <button class="ctrl-btn" onclick="jStep(1)">Sig. →</button>
+    <button class="ctrl-btn ctrl-play" onclick="jPlay()">▶</button>
+  </div>
+</div>
+
+<!-- ───── DEVS ───── -->
+<div class="panel" id="p-devs">
+  <div class="action-box" id="d-act">BFS — 3 devs y 3 bugs del servidor inestable al seguro. Cap. vehículo: 2.</div>
+  <div class="servers">
+    <div class="server">
+      <div class="server-title">Servidor Inestable</div>
+      <div class="entities" id="dins"></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px" id="dins-c"></div>
+    </div>
+    <div class="vehicle-wrap">
+      <div class="vehicle-box">
+        <div class="vehicle-title">Vehículo</div>
+        <div class="entities" id="dveh" style="justify-content:center"></div>
+      </div>
+      <div class="vehicle-arrow" id="darr">⟷</div>
+      <div class="vehicle-loc" id="dloc">inestable</div>
+    </div>
+    <div class="server">
+      <div class="server-title">Servidor Seguro</div>
+      <div class="entities" id="dseg"></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px" id="dseg-c"></div>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><div class="entity dev-e">D</div>Desarrollador</div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><div class="entity bug-e">B</div>Bug crítico</div>
+  </div>
+  <div class="state-box" id="dstate">(3, 3, 0)</div>
+  <div class="controls">
+    <button class="ctrl-btn" onclick="dStep(-1)">← Ant.</button>
+    <span class="step-info" id="dc">0/11</span>
+    <button class="ctrl-btn" onclick="dStep(1)">Sig. →</button>
+    <button class="ctrl-btn ctrl-play" onclick="dPlay()">▶</button>
+  </div>
+  <div class="action-box" id="ddetail" style="margin-top:0"></div>
+</div>
+
+<!-- ───── UCS ───── -->
+<div class="panel" id="p-ucs">
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-title">Grafo con costos heterogéneos</div>
+    <svg viewBox="0 0 340 160" width="100%" height="160">
+      <defs>
+        <marker id="mu" markerWidth="7" markerHeight="7" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#555"/></marker>
+        <marker id="mug" markerWidth="7" markerHeight="7" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#22d3a0"/></marker>
+        <marker id="mud" markerWidth="7" markerHeight="7" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#f87171"/></marker>
+      </defs>
+      <!-- edges -->
+      <line id="uAB" x1="58" y1="68" x2="128" y2="48" stroke="#444" stroke-width="2" marker-end="url(#mu)"/>
+      <line id="uAC" x1="58" y1="98" x2="128" y2="118" stroke="#444" stroke-width="2" marker-end="url(#mu)"/>
+      <line id="uBG" x1="172" y1="44" x2="262" y2="64" stroke="#444" stroke-width="2" marker-end="url(#mu)"/>
+      <line id="uCD" x1="172" y1="122" x2="242" y2="122" stroke="#444" stroke-width="2" marker-end="url(#mu)"/>
+      <line id="uDG" x1="268" y1="110" x2="282" y2="82" stroke="#444" stroke-width="2" marker-end="url(#mu)"/>
+      <!-- cost labels -->
+      <text x="88" y="48" font-size="11" fill="#fbbf24" font-family="Sora,sans-serif" font-weight="600">1</text>
+      <text x="88" y="120" font-size="11" fill="#fbbf24" font-family="Sora,sans-serif" font-weight="600">1</text>
+      <text x="214" y="46" font-size="11" fill="#f87171" font-family="Sora,sans-serif" font-weight="600">100</text>
+      <text x="202" y="136" font-size="11" fill="#fbbf24" font-family="Sora,sans-serif" font-weight="600">1</text>
+      <text x="274" y="100" font-size="11" fill="#fbbf24" font-family="Sora,sans-serif" font-weight="600">1</text>
+      <!-- nodes -->
+      <g id="uA"><circle cx="40" cy="84" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="40" y="89" text-anchor="middle" font-size="15" font-weight="700" fill="#888" font-family="Sora,sans-serif">A</text></g>
+      <g id="uB"><circle cx="150" cy="40" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="150" y="45" text-anchor="middle" font-size="15" font-weight="700" fill="#888" font-family="Sora,sans-serif">B</text></g>
+      <g id="uC"><circle cx="150" cy="126" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="150" y="131" text-anchor="middle" font-size="15" font-weight="700" fill="#888" font-family="Sora,sans-serif">C</text></g>
+      <g id="uD"><circle cx="260" cy="126" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="260" y="131" text-anchor="middle" font-size="15" font-weight="700" fill="#888" font-family="Sora,sans-serif">D</text></g>
+      <g id="uG"><circle cx="292" cy="72" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="292" y="77" text-anchor="middle" font-size="15" font-weight="700" fill="#888" font-family="Sora,sans-serif">G</text></g>
+      <text x="40" y="114" text-anchor="middle" font-size="9" fill="#444" font-family="Sora,sans-serif">inicio</text>
+      <text x="292" y="102" text-anchor="middle" font-size="9" fill="#444" font-family="Sora,sans-serif">meta</text>
+    </svg>
+  </div>
+  <div class="card">
+    <div class="card-title">Cola de Prioridad (min-heap por g) — Frontera</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:8px">Formato: nodo(costo_acumulado) — el de menor costo siempre primero</div>
+    <div class="ds-row" id="uF"></div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+      <div class="card-title">best_g { } — mejor costo conocido por estado</div>
+      <div class="ds-row" id="uV"></div>
+    </div>
+    <div class="counter-row">
+      <div class="counter"><div class="counter-val" id="ucg">0</div><div class="counter-lbl">generados</div></div>
+      <div class="counter"><div class="counter-val" id="uce">0</div><div class="counter-lbl">expandidos</div></div>
+      <div class="counter"><div class="counter-val" id="ucost">0</div><div class="counter-lbl">costo actual</div></div>
+    </div>
+  </div>
+  <div class="action-box" id="u-act">UCS expande siempre el nodo de MENOR costo acumulado. Presiona Siguiente →</div>
+  <div class="controls">
+    <button class="ctrl-btn" onclick="uStep(-1)" id="up" disabled>← Ant.</button>
+    <span class="step-info" id="uc">1/8</span>
+    <button class="ctrl-btn" onclick="uStep(1)" id="un">Sig. →</button>
+    <button class="ctrl-btn ctrl-play" onclick="uPlay()" id="uplay">▶</button>
+  </div>
+  <div class="card" style="margin-top:0">
+    <div class="card-title">Pseudocódigo — UCS</div>
+    <div id="ucodeblock"></div>
+  </div>
+  <div class="card" style="margin-top:10px;background:rgba(34,211,160,.05);border-color:rgba(34,211,160,.2)">
+    <div class="card-title" style="color:var(--green)">Resultado final — Comparación con BFS</div>
+    <table class="ctable" style="margin:0">
+      <tr><th>Algoritmo</th><th>Camino</th><th>Pasos</th><th>Costo</th></tr>
+      <tr><td>BFS</td><td>A→B→G</td><td>2</td><td><span class="no">101</span></td></tr>
+      <tr class="hi"><td>UCS</td><td>A→C→D→G</td><td>3</td><td><span class="yes">3 ✓</span></td></tr>
+    </table>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px">BFS minimiza PASOS. UCS minimiza COSTO. Son iguales solo cuando todos los costos son uniformes.</div>
+  </div>
+</div>
+
+<!-- ───── IDDFS ───── -->
+<div class="panel" id="p-iddfs">
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-title">Grafo: A→B→C→A | C→G</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">IDDFS ejecuta DLS con límite 0, 1, 2, 3... hasta encontrar la meta</div>
+    <svg viewBox="0 0 340 150" width="100%" height="120">
+      <defs>
+        <marker id="mi" markerWidth="7" markerHeight="7" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#555"/></marker>
+        <marker id="mig" markerWidth="7" markerHeight="7" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#22d3a0"/></marker>
+        <marker id="mia" markerWidth="7" markerHeight="7" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#a78bfa"/></marker>
+      </defs>
+      <line id="iAB" x1="74" y1="72" x2="145" y2="72" stroke="#333" stroke-width="2" marker-end="url(#mi)"/>
+      <line id="iBC" x1="193" y1="72" x2="258" y2="72" stroke="#333" stroke-width="2" marker-end="url(#mi)"/>
+      <path id="iCA" d="M252,56 Q175,10 88,56" stroke="#333" stroke-width="2" fill="none" marker-end="url(#mi)"/>
+      <line id="iCG" x1="284" y1="56" x2="305" y2="34" stroke="#333" stroke-width="2" marker-end="url(#mi)"/>
+      <g id="iA"><circle cx="52" cy="72" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="52" y="77" text-anchor="middle" font-size="15" font-weight="700" fill="#888" font-family="Sora,sans-serif">A</text></g>
+      <g id="iB"><circle cx="169" cy="72" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="169" y="77" text-anchor="middle" font-size="15" font-weight="700" fill="#888" font-family="Sora,sans-serif">B</text></g>
+      <g id="iC"><circle cx="274" cy="72" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="274" y="77" text-anchor="middle" font-size="15" font-weight="700" fill="#888" font-family="Sora,sans-serif">C</text></g>
+      <g id="iG"><circle cx="322" cy="20" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="322" y="25" text-anchor="middle" font-size="15" font-weight="700" fill="#888" font-family="Sora,sans-serif">G</text></g>
+    </svg>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Iteración actual</div>
+    <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+      <div style="flex:1;text-align:center;background:var(--surface2);border-radius:var(--radius-sm);padding:10px">
+        <div style="font-size:22px;font-weight:700;color:var(--accent2)" id="i-limit">0</div>
+        <div style="font-size:10px;color:var(--muted)">Límite actual</div>
+      </div>
+      <div style="flex:1;text-align:center;background:var(--surface2);border-radius:var(--radius-sm);padding:10px">
+        <div style="font-size:22px;font-weight:700;color:var(--text)" id="i-depth">0</div>
+        <div style="font-size:10px;color:var(--muted)">Prof. actual</div>
+      </div>
+      <div style="flex:1;text-align:center;background:var(--surface2);border-radius:var(--radius-sm);padding:10px">
+        <div style="font-size:22px;font-weight:700;color:var(--green)" id="i-gen">0</div>
+        <div style="font-size:10px;color:var(--muted)">Generados total</div>
+      </div>
+    </div>
+    <div class="card-title">Pila actual (LIFO)</div>
+    <div class="ds-row" id="iF"></div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+      <div class="card-title">Ruta actual (path-checking)</div>
+      <div class="ds-row" id="iR"></div>
+    </div>
+  </div>
+  <div class="action-box" id="i-act">IDDFS comienza con límite 0. Si no encuentra meta, aumenta límite. Presiona Siguiente →</div>
+  <div class="controls">
+    <button class="ctrl-btn" onclick="iStep(-1)" id="ip" disabled>← Ant.</button>
+    <span class="step-info" id="ic">1/14</span>
+    <button class="ctrl-btn" onclick="iStep(1)" id="in">Sig. →</button>
+    <button class="ctrl-btn ctrl-play" onclick="iPlay()" id="iplay">▶</button>
+  </div>
+  <div class="card" style="margin-top:0">
+    <div class="card-title">Pseudocódigo — IDDFS + DLS</div>
+    <div id="icodeblock"></div>
+  </div>
+  <div class="card" style="margin-top:10px;background:rgba(108,99,255,.05);border-color:rgba(108,99,255,.2)">
+    <div class="card-title" style="color:var(--accent2)">Comparación BFS vs IDDFS (grafo convergencia)</div>
+    <table class="ctable" style="margin:0">
+      <tr><th>Algoritmo</th><th>Generados</th><th>Expandidos</th><th>Memoria</th><th>Longitud</th></tr>
+      <tr><td>BFS</td><td>4</td><td>4</td><td><span class="no">O(b^d)</span></td><td>2</td></tr>
+      <tr class="hi"><td>IDDFS</td><td>8</td><td>7</td><td><span class="yes">O(b·d)</span></td><td>2</td></tr>
+    </table>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px">IDDFS genera más nodos pero usa drásticamente menos memoria. Con b=10, d=10: BFS=10^10 nodos, IDDFS=100 nodos.</div>
+  </div>
+</div>
+
+<!-- ───── FLASHCARDS ───── -->
+<div class="panel" id="p-flash">
+  <div class="prog-bar-wrap"><div class="prog-bar" id="fprog"></div></div>
+  <div class="fc-wrap" id="fcwrap" onclick="flipCard()">
+    <div class="fc-inner" id="fcinner">
+      <div class="fc-face">
+        <div class="fc-tag">Pregunta</div>
+        <div class="fc-q" id="fcq"></div>
+        <div class="fc-hint">Toca para ver la respuesta</div>
+      </div>
+      <div class="fc-face fc-back">
+        <div class="fc-tag">Respuesta</div>
+        <div class="fc-a" id="fca"></div>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <button class="ctrl-btn" onclick="fStep(-1)">← Ant.</button>
+    <span class="step-info" id="fcc">1/23</span>
+    <button class="ctrl-btn" onclick="fStep(1)">Sig. →</button>
+  </div>
+</div>
+
+<!-- ───── QUIZ ───── -->
+<div class="panel" id="p-quiz">
+  <div id="quiz-main">
+    <div class="prog-bar-wrap"><div class="prog-bar" id="qprog"></div></div>
+    <div class="quiz-q" id="quizQ"></div>
+    <div class="quiz-opts" id="quizOpts"></div>
+    <div class="quiz-fb" id="quizFb"></div>
+    <button class="quiz-next" id="quizNext" onclick="nextQ()">Siguiente pregunta →</button>
+  </div>
+  <div class="score-box" id="quiz-score" style="display:none">
+    <div class="score-num" id="scoreNum"></div>
+    <div class="score-sub" id="scoreSub"></div>
+    <br>
+    <button class="score-restart" onclick="restartQuiz()">Intentar de nuevo</button>
+  </div>
+</div>
+
+<!-- ───── COMPARE ───── -->
+<div class="panel" id="p-compare">
+  <div class="section-sep">BFS vs DFS</div>
+  <div style="overflow-x:auto"><table class="ctable">
+    <tr><th>Característica</th><th>BFS</th><th>DFS</th></tr>
+    <tr class="hi"><td>Estructura</td><td>Cola FIFO</td><td>Pila LIFO</td></tr>
+    <tr><td>Explora por</td><td>Niveles</td><td>Ramas</td></tr>
+    <tr class="hi"><td>Marca visitado</td><td>Al ENCOLAR</td><td>Al DESAPILAR</td></tr>
+    <tr><td>Completo</td><td><span class="yes">Sí</span></td><td><span class="maybe">Esp.finito</span></td></tr>
+    <tr class="hi"><td>Óptimo pasos</td><td><span class="yes">Sí</span></td><td><span class="no">No</span></td></tr>
+    <tr><td>Memoria</td><td><span class="no">ALTO O(b^d)</span></td><td><span class="yes">BAJO O(b·m)</span></td></tr>
+    <tr class="hi"><td>Jarras (pasos)</td><td>3 pasos ✓</td><td>7 pasos ✗</td></tr>
+  </table></div>
+
+  <div class="section-sep" style="margin-top:8px">BFS vs UCS</div>
+  <div style="overflow-x:auto"><table class="ctable">
+    <tr><th>Característica</th><th>BFS</th><th>UCS</th></tr>
+    <tr class="hi"><td>Ordena por</td><td>Pasos</td><td>Costo g(n)</td></tr>
+    <tr><td>Óptimo pasos</td><td><span class="yes">Sí</span></td><td><span class="maybe">No siempre</span></td></tr>
+    <tr class="hi"><td>Óptimo costo</td><td><span class="maybe">Solo c.unif.</span></td><td><span class="yes">Siempre</span></td></tr>
+    <tr><td>Grafo costos hetero.</td><td>A→B→G (101)</td><td>A→C→D→G (3)</td></tr>
+    <tr class="hi"><td>Iguales cuando</td><td colspan="2">Todos los costos son uniformes</td></tr>
+  </table></div>
+
+  <div class="section-sep" style="margin-top:8px">Todos los algoritmos</div>
+  <div style="overflow-x:auto"><table class="ctable">
+    <tr><th>Algoritmo</th><th>Completo</th><th>Óptimo</th><th>Ciclos</th><th>Mem.</th></tr>
+    <tr><td>BFS árbol</td><td><span class="no">No</span></td><td><span class="no">No</span></td><td><span class="no">Sí</span></td><td>ALTO</td></tr>
+    <tr class="hi"><td>BFS grafo</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí*</span></td><td><span class="yes">No</span></td><td>ALTO</td></tr>
+    <tr><td>DFS árbol</td><td><span class="no">No</span></td><td><span class="no">No</span></td><td><span class="no">Sí</span></td><td>BAJO</td></tr>
+    <tr class="hi"><td>DFS grafo</td><td><span class="maybe">E.fin.</span></td><td><span class="no">No</span></td><td><span class="yes">No</span></td><td>BAJO</td></tr>
+    <tr><td>UCS</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí</span></td><td><span class="yes">No</span></td><td>ALTO</td></tr>
+    <tr class="hi"><td>IDDFS</td><td><span class="yes">Sí</span></td><td><span class="yes">Sí*</span></td><td><span class="yes">No†</span></td><td>BAJO</td></tr>
+  </table></div>
+  <div style="font-size:10px;color:var(--muted);padding-top:4px">*costos uniformes &nbsp; †con path-checking</div>
+</div>
+
+<!-- ───── TRAMPA ───── -->
+<div class="panel" id="p-trampa">
+  <div style="font-size:12px;color:var(--muted);padding:10px 12px;background:rgba(248,113,113,.07);border-radius:var(--radius-sm);border-left:3px solid var(--red);margin-bottom:14px;line-height:1.6">Estas son las preguntas que pone la maestra para confundir. Piénsalas antes de ver la respuesta.</div>
+
+  <div class="trampa-card">
+    <div class="trampa-tag">Trampa 1</div>
+    <div class="trampa-q">"BFS árbol encontró la solución en el Experimento 1 sin ciclar. ¿Eso significa que es completo en grafos con ciclos?"</div>
+    <button class="trampa-toggle" onclick="tog(this)">Ver respuesta</button>
+    <div class="trampa-ans"><b>No.</b> Terminó porque G estaba a profundidad 3, antes de que el ciclo acumulara. Con meta inalcanzable, BFS árbol ciclaría infinito. Un caso afortunado no hace completo al algoritmo.</div>
+  </div>
+
+  <div class="trampa-card">
+    <div class="trampa-tag">Trampa 2</div>
+    <div class="trampa-q">"DFS encontró A→C→D→G con costo 3, igual que UCS. ¿DFS también es óptimo en costo?"</div>
+    <button class="trampa-toggle" onclick="tog(this)">Ver respuesta</button>
+    <div class="trampa-ans"><b>No.</b> DFS lo encontró por el orden de sucesores, no por garantía. En otro grafo podría devolver A→B→G con costo 101. UCS garantiza el óptimo siempre — DFS solo coincide por casualidad.</div>
+  </div>
+
+  <div class="trampa-card">
+    <div class="trampa-tag">Trampa 3</div>
+    <div class="trampa-q">"IDDFS genera más nodos que BFS (8 vs 4). ¿Es peor que BFS?"</div>
+    <button class="trampa-toggle" onclick="tog(this)">Ver respuesta</button>
+    <div class="trampa-ans"><b>No.</b> Genera ~11% más nodos, pero usa O(b·d) memoria vs O(b^d) de BFS. Con b=10, d=10: BFS necesita 10,000,000,000 nodos en RAM. IDDFS solo 100. El trueoff es válido.</div>
+  </div>
+
+  <div class="trampa-card">
+    <div class="trampa-tag">Trampa 4</div>
+    <div class="trampa-q">"El árbol de búsqueda es el grafo de estados reorganizado en árbol, ¿verdad?"</div>
+    <button class="trampa-toggle" onclick="tog(this)">Ver respuesta</button>
+    <div class="trampa-ans"><b>No.</b> Son estructuras distintas. El grafo existe antes del algoritmo. El árbol se genera dinámicamente durante la exploración. El mismo estado puede aparecer múltiples veces en el árbol. El árbol puede ser infinito aunque el grafo sea finito.</div>
+  </div>
+
+  <div class="trampa-card">
+    <div class="trampa-tag">Trampa 5</div>
+    <div class="trampa-q">"El estado (0, 2, 1) en Devs & Bugs — 0 devs y 2 bugs en inestable — es inválido por la restricción."</div>
+    <button class="trampa-toggle" onclick="tog(this)">Ver respuesta</button>
+    <div class="trampa-ans"><b>No es inválido.</b> La restricción es: bugs ≤ devs CUANDO hay al menos 1 dev presente. Con devs=0, la condición no aplica. En código: <code style="font-size:11px">if devs > 0 → bugs ≤ devs</code>. Con devs=0 ni se evalúa.</div>
+  </div>
+
+  <div class="trampa-card">
+    <div class="trampa-tag">Trampa 6</div>
+    <div class="trampa-q">"DLS en IDDFS usa visitados globales igual que BFS y DFS, para ser consistente."</div>
+    <button class="trampa-toggle" onclick="tog(this)">Ver respuesta</button>
+    <div class="trampa-ans"><b>No.</b> DLS usa path-checking (frozenset del camino actual), no visitados globales. Si usara globales, los estados marcados en límite=2 bloquearían la exploración en límite=3. Path-checking solo evita ciclos dentro del camino actual.</div>
+  </div>
+</div>
+
+</div><!-- panels -->
+
+<script>
+// ── GRAPH DATA ──
+const bfsCode=['frontera = Cola FIFO','visitados = {}','encolar(inicio); marcar(inicio)','— — — — — — — — — — —','mientras frontera no vacía:','  estado = frontera.pop()  ← EXPANDIR','  si isGoal(estado): retornar camino','  para cada sucesor:','    si sucesor ∉ visitados:','      marcar(sucesor)','      encolar(sucesor)  ← GENERAR'];
+const dfsCode=['frontera = Pila LIFO','visitados = {}','apilar(inicio)','— — — — — — — — — — —','mientras frontera no vacía:','  estado = frontera.pop()  ← EXPANDIR','  si estado ∈ visitados: continuar','  marcar(estado)','  si isGoal(estado): retornar camino','  para cada sucesor:','    si sucesor ∉ visitados:','      apilar(sucesor)  ← GENERAR'];
+
+const NS={unvisited:{f:'#1a1a24',s:'#444',t:'#666'},frontier:{f:'rgba(251,191,36,.15)',s:'#fbbf24',t:'#fbbf24'},current:{f:'rgba(96,165,250,.15)',s:'#60a5fa',t:'#60a5fa'},visited:{f:'rgba(34,211,160,.1)',s:'#22d3a0',t:'#22d3a0'},goal:{f:'rgba(34,211,160,.2)',s:'#22d3a0',t:'#22d3a0'}};
+
+const bfsS=[
+  {ns:{A:'frontier',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'n',BC:'n',CA:'n',CG:'n'},F:['A'],V:[],g:1,e:0,act:'Inicio: encolar A y marcar visitado. nodos_generados=1.',hl:[0,1,2]},
+  {ns:{A:'current',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},F:[],V:['A'],g:1,e:1,act:'Pop A → expandir (nodos_expandidos=1). ¿Meta? No. Sucesor: B.',hl:[4,5,6]},
+  {ns:{A:'visited',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'n',CA:'n',CG:'n'},F:['B'],V:['A'],g:2,e:1,act:'B ∉ visitados → marcar B, encolar B. nodos_generados=2.',hl:[7,8,9,10]},
+  {ns:{A:'visited',B:'current',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'a',CA:'n',CG:'n'},F:[],V:['A','B'],g:2,e:2,act:'Pop B → expandir (nodos_expandidos=2). ¿Meta? No. Sucesor: C.',hl:[4,5,6]},
+  {ns:{A:'visited',B:'visited',C:'frontier',G:'unvisited'},es:{AB:'p',BC:'p',CA:'n',CG:'n'},F:['C'],V:['A','B'],g:3,e:2,act:'C ∉ visitados → marcar C, encolar C. nodos_generados=3.',hl:[7,8,9,10]},
+  {ns:{A:'visited',B:'visited',C:'current',G:'unvisited'},es:{AB:'p',BC:'p',CA:'s',CG:'a'},F:[],V:['A','B','C'],g:3,e:3,act:'Pop C → expandir. Sucesores: A (ya visitado → saltar), G → encolar.',hl:[4,5,6,7,8]},
+  {ns:{A:'visited',B:'visited',C:'visited',G:'frontier'},es:{AB:'p',BC:'p',CA:'s',CG:'p'},F:['G'],V:['A','B','C'],g:4,e:3,act:'G marcado y encolado. nodos_generados=4. A fue descartado (visitado).',hl:[9,10]},
+  {ns:{A:'visited',B:'visited',C:'visited',G:'goal'},es:{AB:'p',BC:'p',CA:'s',CG:'p'},F:[],V:['A','B','C','G'],g:4,e:4,act:'🎯 Pop G → expandir (nodos_expandidos=4). ¡META! Camino: A→B→C→G | Longitud:3 | Gen:4 | Exp:4',hl:[4,5,6]},
+];
+
+const dfsS=[
+  {ns:{A:'frontier',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'n',BC:'n',CA:'n',CG:'n'},F:['A'],V:[],g:1,e:0,act:'Inicio: apilar A en la pila. nodos_generados=1.',hl:[0,1,2]},
+  {ns:{A:'current',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},F:[],V:[],g:1,e:1,act:'Pop A. ¿Visitado? No → marcar A. ¿Meta? No. Sucesor B → apilar.',hl:[4,5,6,7,8]},
+  {ns:{A:'visited',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'n',CA:'n',CG:'n'},F:['B'],V:['A'],g:2,e:1,act:'B apilado. nodos_generados=2. DFS va directo al fondo de la rama.',hl:[9,10,11]},
+  {ns:{A:'visited',B:'current',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'a',CA:'n',CG:'n'},F:[],V:['A'],g:2,e:2,act:'Pop B. ¿Visitado? No → marcar B. ¿Meta? No. Sucesor C → apilar.',hl:[4,5,6,7,8]},
+  {ns:{A:'visited',B:'visited',C:'frontier',G:'unvisited'},es:{AB:'p',BC:'p',CA:'n',CG:'n'},F:['C'],V:['A','B'],g:3,e:2,act:'C apilado. nodos_generados=3.',hl:[9,10,11]},
+  {ns:{A:'visited',B:'visited',C:'current',G:'unvisited'},es:{AB:'p',BC:'p',CA:'s',CG:'a'},F:[],V:['A','B'],g:3,e:3,act:'Pop C. ¿Visitado? No → marcar C. Sucesores: A (visitado → saltar), G → apilar.',hl:[4,5,6,7,8,9,10]},
+  {ns:{A:'visited',B:'visited',C:'visited',G:'frontier'},es:{AB:'p',BC:'p',CA:'s',CG:'p'},F:['G'],V:['A','B','C'],g:4,e:3,act:'G apilado. nodos_generados=4.',hl:[11]},
+  {ns:{A:'visited',B:'visited',C:'visited',G:'goal'},es:{AB:'p',BC:'p',CA:'s',CG:'p'},F:[],V:['A','B','C','G'],g:4,e:4,act:'🎯 Pop G. ¿Visitado? No → marcar. ¡META! Camino: A→B→C→G | Gen:4 | Exp:4',hl:[4,5,6,7,8]},
+];
+
+let algo='bfs',gCur=0,gTim=null;
+
+function setAlgo(a){
+  algo=a; gCur=0; clearInterval(gTim); gTim=null;
+  document.getElementById('gplay').textContent='▶';
+  ['bfs','dfs'].forEach(x=>document.getElementById('a'+x).className='algo-btn'+(x===a?' active':''));
+  document.getElementById('ds-title').textContent=a==='bfs'?'Cola (FIFO) — Frontera':'Pila (LIFO) — Frontera';
+  document.getElementById('code-title').textContent='Pseudocódigo — '+a.toUpperCase();
+  renderG();
+}
+
+function sn(id,st){
+  const g=document.getElementById('n'+id);
+  if(!g)return;
+  const s=NS[st];
+  g.querySelector('circle').setAttribute('fill',s.f);
+  g.querySelector('circle').setAttribute('stroke',s.s);
+  g.querySelector('text').setAttribute('fill',s.t);
+}
+function se(id,st){
+  const el=document.getElementById('e'+id);
+  if(!el)return;
+  const c={n:'#333',a:'#fbbf24',p:'#22d3a0',s:'#222'};
+  const m={n:'m0',a:'ma',p:'mg',s:'m0'};
+  el.setAttribute('stroke',c[st]);
+  el.setAttribute('marker-end','url(#'+m[st]+')');
+}
+
+function renderG(){
+  const steps=algo==='bfs'?bfsS:dfsS;
+  const s=steps[gCur];
+  ['A','B','C','G'].forEach(n=>sn(n,s.ns[n]));
+  ['AB','BC','CA','CG'].forEach(e=>se(e,s.es[e]));
+  const fEl=document.getElementById('dsF'); fEl.innerHTML='';
+  if(s.F.length){s.F.forEach((x,i)=>{const el=document.createElement('div');el.className='ds-item'+(algo==='bfs'&&i===0?' cur':algo==='dfs'&&i===s.F.length-1?' cur':'');el.textContent=x;fEl.appendChild(el);});}
+  else{const el=document.createElement('div');el.className='ds-empty';el.textContent='vacía';fEl.appendChild(el);}
+  const vEl=document.getElementById('dsV'); vEl.innerHTML='';
+  if(s.V.length){s.V.forEach(x=>{const el=document.createElement('div');el.className='ds-item vis';el.textContent=x;vEl.appendChild(el);});}
+  else{const el=document.createElement('div');el.className='ds-empty';el.textContent='{ }';vEl.appendChild(el);}
+  document.getElementById('cg').textContent=s.g;
+  document.getElementById('ce').textContent=s.e;
+  document.getElementById('g-act').textContent=s.act;
+  document.getElementById('gc').textContent=(gCur+1)+'/'+steps.length;
+  document.getElementById('gp').disabled=gCur===0;
+  document.getElementById('gn').disabled=gCur===steps.length-1;
+  const code=algo==='bfs'?bfsCode:dfsCode;
+  document.getElementById('codeblock').innerHTML=code.map((l,i)=>`<div class="codeline${s.hl.includes(i)?' hl':''}">${l}</div>`).join('');
+}
+function gStep(d){gCur=Math.max(0,Math.min((algo==='bfs'?bfsS:dfsS).length-1,gCur+d));renderG();}
+function gPlay(){
+  if(gTim){clearInterval(gTim);gTim=null;document.getElementById('gplay').textContent='▶';return;}
+  document.getElementById('gplay').textContent='⏸';
+  gTim=setInterval(()=>{const len=(algo==='bfs'?bfsS:dfsS).length;if(gCur>=len-1){clearInterval(gTim);gTim=null;document.getElementById('gplay').textContent='▶';return;}gCur++;renderG();},1600);
+}
+
+// ── JARS ──
+const jS=[
+  {b:0,s:0,F:['(0,0)'],V:['(0,0)'],act:'Inicio: estado (0,0). BFS encola (0,0).',arr:'',an:''},
+  {b:5,s:0,F:['(0,3)','(5,0)'],V:['(0,0)'],act:'Pop (0,0) → LlenarA→(5,0), LlenarB→(0,3). Ambos encolados.',arr:'→',an:'Expandiendo (0,0)'},
+  {b:5,s:3,F:['(5,0)','(5,3)'],V:['(0,0)','(0,3)'],act:'Pop (0,3) → LlenarA→(5,3). BFS sigue nivel por nivel.',arr:'↑',an:'LlenarA + ya visto'},
+  {b:5,s:0,F:['(2,3)'],V:['(0,0)','(0,3)','(5,3)','(5,0)'],act:'Pop (5,0) → AhaciaB → (2,3). Pasar de grande a pequeña.',arr:'→',an:'AhaciaB'},
+  {b:2,s:3,F:['(2,3)'],V:['(0,0)','(0,3)','(5,3)','(5,0)'],act:'Estado (2,3) encolado.',arr:'≡',an:'(2,3) en frontera'},
+  {b:2,s:0,F:['(2,0)'],V:['(0,0)','(0,3)','(5,3)','(5,0)','(2,3)'],act:'Pop (2,3) → VaciarB → (2,0). Vaciar jarra pequeña.',arr:'↓',an:'VaciarB'},
+  {b:2,s:0,F:[],V:['(0,0)','(0,3)','(5,3)','(5,0)','(2,3)','(2,0)'],act:'🎯 Pop (2,0) = META. LlenarA → AhaciaB → VaciarB. Longitud: 3.',arr:'✓',an:'¡META! (2,0)'},
+];
+let jCur=0,jTim=null;
+function renderJ(){
+  const s=jS[jCur];
+  document.getElementById('jbw').style.height=(s.b/5*100)+'%';
+  document.getElementById('jsw').style.height=(s.s/3*100)+'%';
+  document.getElementById('jbl').textContent=s.b+'/5';
+  document.getElementById('jsl').textContent=s.s+'/3';
+  document.getElementById('jbv').textContent=s.b+'L';
+  document.getElementById('jsv').textContent=s.s+'L';
+  document.getElementById('j-act').textContent=s.act;
+  document.getElementById('jarr').textContent=s.arr||'↔';
+  document.getElementById('janame').textContent=s.an;
+  document.getElementById('jc').textContent=(jCur+1)+'/'+jS.length;
+  const fEl=document.getElementById('jfront');fEl.innerHTML='';
+  if(s.F.length){s.F.forEach((x,i)=>{const el=document.createElement('div');el.className='ds-item'+(i===0?' cur':'');el.textContent=x;fEl.appendChild(el);});}
+  else{fEl.innerHTML='<span class="ds-empty" style="color:#22d3a0">✓ Solución encontrada</span>';}
+  const vEl=document.getElementById('jvis');vEl.innerHTML='';
+  s.V.forEach(x=>{const el=document.createElement('div');el.className='ds-item vis';el.textContent=x;vEl.appendChild(el);});
+}
+function jStep(d){jCur=Math.max(0,Math.min(jS.length-1,jCur+d));renderJ();}
+function jPlay(){if(jTim){clearInterval(jTim);jTim=null;return;}jTim=setInterval(()=>{if(jCur>=jS.length-1){clearInterval(jTim);jTim=null;return;}jCur++;renderJ();},1800);}
+
+// ── DEVS ──
+const dS=[
+  {di:3,bi:3,veh:[],vl:0,arr:'',det:'Estado inicial (3,3,0). Todos en servidor inestable. BFS comienza.'},
+  {di:3,bi:1,veh:['B','B'],vl:1,arr:'→',det:'Paso 1 → Cruzar 2 bugs al seguro. Estado: (3,1,1).'},
+  {di:3,bi:2,veh:['B'],vl:0,arr:'←',det:'Paso 2 ← Regresar 1 bug. Estado: (3,2,0).'},
+  {di:3,bi:0,veh:['B','B'],vl:1,arr:'→',det:'Paso 3 → Cruzar 2 bugs más. Estado: (3,0,1).'},
+  {di:3,bi:1,veh:['B'],vl:0,arr:'←',det:'Paso 4 ← Regresar 1 bug. Estado: (3,1,0). Necesario para mantener restricción.'},
+  {di:1,bi:1,veh:['D','D'],vl:1,arr:'→',det:'Paso 5 → Cruzar 2 devs. Estado: (1,1,1). Inestable: 1dev,1bug — OK.'},
+  {di:2,bi:2,veh:['D','B'],vl:0,arr:'←',det:'Paso 6 ← Regresar 1dev+1bug. Estado: (2,2,0).'},
+  {di:0,bi:2,veh:['D','D'],vl:1,arr:'→',det:'Paso 7 → Cruzar 2 devs. Estado: (0,2,1). 0 devs en inestable → sin restricción.'},
+  {di:0,bi:3,veh:['B'],vl:0,arr:'←',det:'Paso 8 ← Regresar 1 bug. Estado: (0,3,0).'},
+  {di:0,bi:1,veh:['B','B'],vl:1,arr:'→',det:'Paso 9 → Cruzar 2 bugs. Estado: (0,1,1).'},
+  {di:0,bi:2,veh:['B'],vl:0,arr:'←',det:'Paso 10 ← Regresar 1 bug. Estado: (0,2,0).'},
+  {di:0,bi:0,veh:['B','B'],vl:1,arr:'→',det:'🎯 Paso 11 → Cruzar últimos 2 bugs. Estado: (0,0,1). ¡META! Longitud: 11, Costo: 25.'},
+];
+let dCur=0,dTim=null;
+function mkE(t){const e=document.createElement('div');e.className='entity '+(t==='D'?'dev-e':'bug-e');e.textContent=t;return e;}
+function renderD(){
+  const s=dS[dCur];
+  const ds=3-s.di,bs=3-s.bi;
+  const iEl=document.getElementById('dins');iEl.innerHTML='';
+  for(let i=0;i<s.di;i++)iEl.appendChild(mkE('D'));
+  for(let i=0;i<s.bi;i++)iEl.appendChild(mkE('B'));
+  if(!s.di&&!s.bi)iEl.innerHTML='<span class="ds-empty">vacío</span>';
+  document.getElementById('dins-c').textContent=`devs:${s.di} bugs:${s.bi}`;
+  const sEl=document.getElementById('dseg');sEl.innerHTML='';
+  for(let i=0;i<ds;i++)sEl.appendChild(mkE('D'));
+  for(let i=0;i<bs;i++)sEl.appendChild(mkE('B'));
+  if(!ds&&!bs)sEl.innerHTML='<span class="ds-empty">vacío</span>';
+  document.getElementById('dseg-c').textContent=`devs:${ds} bugs:${bs}`;
+  const vEl=document.getElementById('dveh');vEl.innerHTML='';
+  if(s.veh.length){s.veh.forEach(t=>vEl.appendChild(mkE(t)));}
+  else vEl.innerHTML='<span class="ds-empty">—</span>';
+  document.getElementById('darr').textContent=s.arr||'⟷';
+  document.getElementById('dloc').textContent=s.vl===0?'en inestable':'en seguro';
+  document.getElementById('dstate').textContent=`(${s.di}, ${s.bi}, ${s.vl})`;
+  document.getElementById('ddetail').textContent=s.det;
+  document.getElementById('dc').textContent=dCur+'/11';
+}
+function dStep(d){dCur=Math.max(0,Math.min(dS.length-1,dCur+d));renderD();}
+function dPlay(){if(dTim){clearInterval(dTim);dTim=null;return;}dTim=setInterval(()=>{if(dCur>=dS.length-1){clearInterval(dTim);dTim=null;return;}dCur++;renderD();},1800);}
+
+// ── UCS ──
+const ucsCode=['frontera = Cola de prioridad (min-heap)','best_g = {}  ← mejor costo por estado','insertar (inicio, g=0) con prioridad 0','best_g[inicio] = 0','— — — — — — — — — — — — —','mientras frontera no vacía:','  estado, camino, g = extraer MENOR costo','  si g > best_g[estado]: ignorar (obsoleto)','  si isGoal(estado): retornar camino','  para cada (sucesor, costo_paso):','    nuevo_g = g + costo_paso','    si nuevo_g < best_g[sucesor]:','      best_g[sucesor] = nuevo_g','      insertar (sucesor, nuevo_g) con prioridad nuevo_g'];
+
+const uS=[
+  {ns:{A:'frontier',B:'unvisited',C:'unvisited',D:'unvisited',G:'unvisited'},
+   es:{AB:'n',AC:'n',BG:'n',CD:'n',DG:'n'},
+   F:['A(0)'],V:['A→0'],g:1,e:0,cost:0,
+   act:'Inicio: insertar A con g=0 en la cola de prioridad. best_g[A]=0.',hl:[0,1,2,3]},
+  {ns:{A:'current',B:'frontier',C:'frontier',D:'unvisited',G:'unvisited'},
+   es:{AB:'a',AC:'a',BG:'n',CD:'n',DG:'n'},
+   F:['B(1)','C(1)'],V:['A→0','B→1','C→1'],g:3,e:1,cost:0,
+   act:'Pop A (g=0, menor). Expandir. Sucesores: B(g=1), C(g=1). Ambos insertados. nodos_expandidos=1.',hl:[5,6,7,8,9,10,11,12,13]},
+  {ns:{A:'visited',B:'current',C:'frontier',D:'unvisited',G:'unvisited'},
+   es:{AB:'p',AC:'n',BG:'a',CD:'n',DG:'n'},
+   F:['C(1)','G(101)'],V:['A→0','B→1','C→1','G→101'],g:4,e:2,cost:1,
+   act:'Pop B (g=1). Expandir. Sucesor: G(g=1+100=101). Insertar G(101). nodos_expandidos=2.',hl:[5,6,7,8,9,10,11,12,13]},
+  {ns:{A:'visited',B:'visited',C:'current',D:'frontier',G:'frontier'},
+   es:{AB:'p',AC:'p',BG:'n',CD:'a',DG:'n'},
+   F:['D(2)','G(101)'],V:['A→0','B→1','C→1','G→101','D→2'],g:5,e:3,cost:1,
+   act:'Pop C (g=1). Expandir. Sucesor: D(g=1+1=2). 2 < ∞ → insertar D(2). nodos_expandidos=3.',hl:[5,6,7,8,9,10,11,12,13]},
+  {ns:{A:'visited',B:'visited',C:'visited',D:'current',G:'frontier'},
+   es:{AB:'p',AC:'p',BG:'n',CD:'p',DG:'a'},
+   F:['G(3)','G(101)'],V:['A→0','B→1','C→1','G→101','D→2','G→3'],g:6,e:4,cost:2,
+   act:'Pop D (g=2). Expandir. Sucesor: G(g=2+1=3). 3 < 101 → actualizar best_g[G]=3, insertar G(3). nodos_expandidos=4.',hl:[5,6,7,8,9,10,11,12,13]},
+  {ns:{A:'visited',B:'visited',C:'visited',D:'visited',G:'current'},
+   es:{AB:'p',AC:'p',BG:'n',CD:'p',DG:'p'},
+   F:['G(101)'],V:['A→0','B→1','C→1','G→3','D→2'],g:6,e:5,cost:3,
+   act:'Pop G (g=3). ¿g(3) > best_g[G](3)? No → expandir. ¿Meta? ¡SÍ! Camino: A→C→D→G. Costo=3.',hl:[5,6,7,8]},
+  {ns:{A:'visited',B:'visited',C:'visited',D:'visited',G:'goal'},
+   es:{AB:'n',AC:'p',BG:'n',CD:'p',DG:'p'},
+   F:['G(101) — descartado'],V:['A→0','B→1','C→1','G→3','D→2'],g:6,e:5,cost:3,
+   act:'🎯 ¡META encontrada! Camino óptimo: A→C→D→G | Costo: 3 | Gen: 6 | Exp: 5. La entrada G(101) queda obsoleta y se descarta.',hl:[7,8]},
+];
+
+function unodeStyle(id,st){
+  const el=document.getElementById('u'+id);if(!el)return;
+  const s=NS[st];
+  el.querySelector('circle').setAttribute('fill',s.f);
+  el.querySelector('circle').setAttribute('stroke',s.s);
+  el.querySelector('text').setAttribute('fill',s.t);
+}
+function uedgeStyle(id,st){
+  const el=document.getElementById('u'+id);if(!el)return;
+  const c={n:'#333',a:'#fbbf24',p:'#22d3a0',s:'#222'};
+  const m={n:'mu',a:'mu',p:'mug',s:'mu'};
+  el.setAttribute('stroke',c[st]);
+  el.setAttribute('marker-end','url(#'+m[st]+')');
+}
+
+let uCur=0,uTim=null;
+function renderU(){
+  const s=uS[uCur];
+  ['A','B','C','D','G'].forEach(n=>unodeStyle(n,s.ns[n]||'unvisited'));
+  ['AB','AC','BG','CD','DG'].forEach(e=>uedgeStyle(e,s.es[e]||'n'));
+  const fEl=document.getElementById('uF');fEl.innerHTML='';
+  s.F.forEach((x,i)=>{const el=document.createElement('div');el.className='ds-item'+(i===0?' cur':'');el.textContent=x;fEl.appendChild(el);});
+  const vEl=document.getElementById('uV');vEl.innerHTML='';
+  s.V.forEach(x=>{const el=document.createElement('div');el.className='ds-item vis';el.textContent=x;vEl.appendChild(el);});
+  document.getElementById('ucg').textContent=s.g;
+  document.getElementById('uce').textContent=s.e;
+  document.getElementById('ucost').textContent=s.cost;
+  document.getElementById('u-act').textContent=s.act;
+  document.getElementById('uc').textContent=(uCur+1)+'/'+uS.length;
+  document.getElementById('up').disabled=uCur===0;
+  document.getElementById('un').disabled=uCur===uS.length-1;
+  document.getElementById('ucodeblock').innerHTML=ucsCode.map((l,i)=>`<div class="codeline${s.hl.includes(i)?' hl':''}">${l}</div>`).join('');
+}
+function uStep(d){uCur=Math.max(0,Math.min(uS.length-1,uCur+d));renderU();}
+function uPlay(){if(uTim){clearInterval(uTim);uTim=null;document.getElementById('uplay').textContent='▶';return;}document.getElementById('uplay').textContent='⏸';uTim=setInterval(()=>{if(uCur>=uS.length-1){clearInterval(uTim);uTim=null;document.getElementById('uplay').textContent='▶';return;}uCur++;renderU();},1800);}
+
+// ── IDDFS ──
+const iddfsCode=['IDDFS(problema, max_depth=50):','  para limite en 0,1,2,...,max_depth:','    resultado = DLS(problema, limite)','    si resultado ≠ None: retornar resultado','— — — — — — — — — — —','DLS(problema, limite):','  pila = [(inicio, camino=[], prof=0, ruta={inicio})]','  mientras pila no vacía:','    estado,camino,prof,ruta = pila.pop()','    si isGoal(estado): retornar camino','    si prof < limite:','      para cada sucesor:','        si sucesor ∉ ruta: ← path-checking','          pila.push(sucesor, prof+1, ruta+sucesor)'];
+
+const iS=[
+  {lim:0,dep:0,gen:1,ns:{A:'current',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'n',BC:'n',CA:'n',CG:'n'},F:['A(0)'],R:['A'],act:'Iteración 1: límite=0. DLS expande A (prof=0). ¿A es meta? No. prof(0) = límite(0) → NO expandir hijos. DLS retorna None.',hl:[0,1,2,3,5,6,7,8,9,10]},
+  {lim:1,dep:0,gen:2,ns:{A:'current',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},F:['B(1)'],R:['A','B'],act:'Iteración 2: límite=1. DLS expande A (prof=0). prof(0)<límite(1) → generar B. Apilar B.',hl:[0,1,2,5,6,7,8,9,10,11,12,13]},
+  {lim:1,dep:1,gen:2,ns:{A:'visited',B:'current',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'n',CA:'n',CG:'n'},F:[],R:['A','B'],act:'Pop B (prof=1). ¿Meta? No. prof(1)=límite(1) → NO expandir. DLS retorna None. Límite insuficiente.',hl:[5,7,8,9,10]},
+  {lim:2,dep:0,gen:3,ns:{A:'current',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},F:['B(1)'],R:['A','B'],act:'Iteración 3: límite=2. DLS expande A (prof=0). prof<2 → generar B. Apilar B.',hl:[0,1,2,5,6,7,8,9,10,11,12,13]},
+  {lim:2,dep:1,gen:4,ns:{A:'visited',B:'current',C:'frontier',G:'unvisited'},es:{AB:'p',BC:'a',CA:'n',CG:'n'},F:['C(2)'],R:['A','B','C'],act:'Pop B (prof=1). ¿Meta? No. prof(1)<límite(2) → generar C. C ∉ ruta → apilar C(prof=2).',hl:[5,7,8,9,10,11,12,13]},
+  {lim:2,dep:2,gen:4,ns:{A:'visited',B:'visited',C:'current',G:'unvisited'},es:{AB:'p',BC:'p',CA:'n',CG:'n'},F:[],R:['A','B','C'],act:'Pop C (prof=2). ¿Meta? No. prof(2)=límite(2) → NO expandir (A y G no se generan). DLS retorna None.',hl:[5,7,8,9,10]},
+  {lim:3,dep:0,gen:5,ns:{A:'current',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},F:['B(1)'],R:['A','B'],act:'Iteración 4: límite=3. DLS expande A. prof(0)<3 → generar B.',hl:[0,1,2,5,6,7,8,9,10,11,12,13]},
+  {lim:3,dep:1,gen:6,ns:{A:'visited',B:'current',C:'frontier',G:'unvisited'},es:{AB:'p',BC:'a',CA:'n',CG:'n'},F:['C(2)'],R:['A','B','C'],act:'Pop B (prof=1). prof<3 → generar C. Apilar C(prof=2).',hl:[5,7,8,9,10,11,12,13]},
+  {lim:3,dep:2,gen:8,ns:{A:'visited',B:'visited',C:'current',G:'frontier'},es:{AB:'p',BC:'p',CA:'s',CG:'a'},F:['G(3)'],R:['A','B','C'],act:'Pop C (prof=2). prof<3 → sucesores: A ∈ ruta → saltar (path-check ✓). G ∉ ruta → apilar G(prof=3).',hl:[5,7,8,9,10,11,12,13]},
+  {lim:3,dep:3,gen:8,ns:{A:'visited',B:'visited',C:'visited',G:'goal'},es:{AB:'p',BC:'p',CA:'s',CG:'p'},F:[],R:['A','B','C','G'],act:'🎯 Pop G (prof=3). ¿G es meta? ¡SÍ! DLS retorna camino. IDDFS retorna: A→B→C→G. Longitud: 3. Total generados: 10.',hl:[5,7,8,9]},
+];
+
+function inodeStyle(id,st){
+  const el=document.getElementById('i'+id);if(!el)return;
+  const s=NS[st];
+  el.querySelector('circle').setAttribute('fill',s.f);
+  el.querySelector('circle').setAttribute('stroke',s.s);
+  el.querySelector('text').setAttribute('fill',s.t);
+}
+function iedgeStyle(id,st){
+  const el=document.getElementById('i'+id);if(!el)return;
+  const c={n:'#333',a:'#a78bfa',p:'#22d3a0',s:'#222'};
+  const m={n:'mi',a:'mia',p:'mig',s:'mi'};
+  el.setAttribute('stroke',c[st]);
+  el.setAttribute('marker-end','url(#'+m[st]+')');
+}
+
+let iCur=0,iTim=null;
+function renderI(){
+  const s=iS[iCur];
+  ['A','B','C','G'].forEach(n=>inodeStyle(n,s.ns[n]||'unvisited'));
+  ['AB','BC','CA','CG'].forEach(e=>iedgeStyle(e,s.es[e]||'n'));
+  document.getElementById('i-limit').textContent=s.lim;
+  document.getElementById('i-depth').textContent=s.dep;
+  document.getElementById('i-gen').textContent=s.gen;
+  const fEl=document.getElementById('iF');fEl.innerHTML='';
+  if(s.F.length){s.F.forEach((x,i)=>{const el=document.createElement('div');el.className='ds-item'+(i===s.F.length-1?' cur':'');el.textContent=x;fEl.appendChild(el);});}
+  else{fEl.innerHTML='<span class="ds-empty">pila vacía</span>';}
+  const rEl=document.getElementById('iR');rEl.innerHTML='';
+  s.R.forEach(x=>{const el=document.createElement('div');el.className='ds-item vis';el.textContent=x;rEl.appendChild(el);});
+  document.getElementById('i-act').textContent=s.act;
+  document.getElementById('ic').textContent=(iCur+1)+'/'+iS.length;
+  document.getElementById('ip').disabled=iCur===0;
+  document.getElementById('in').disabled=iCur===iS.length-1;
+  document.getElementById('icodeblock').innerHTML=iddfsCode.map((l,i)=>`<div class="codeline${s.hl.includes(i)?' hl':''}">${l}</div>`).join('');
+}
+function iStep(d){iCur=Math.max(0,Math.min(iS.length-1,iCur+d));renderI();}
+function iPlay(){if(iTim){clearInterval(iTim);iTim=null;document.getElementById('iplay').textContent='▶';return;}document.getElementById('iplay').textContent='⏸';iTim=setInterval(()=>{if(iCur>=iS.length-1){clearInterval(iTim);iTim=null;document.getElementById('iplay').textContent='▶';return;}iCur++;renderI();},1800);}
+
+// ── FLASHCARDS ──
+const cards=[
+  {q:'¿Qué estructura usa BFS?',a:'Cola FIFO. Primero en entrar, primero en salir. Explora nivel por nivel.'},
+  {q:'¿Qué estructura usa DFS?',a:'Pila LIFO. Último en entrar, primero en salir. Explora rama por rama.'},
+  {q:'¿BFS marca visitado al encolar o al desencolar?',a:'Al ENCOLAR. Evita que el mismo estado se encole múltiples veces desde distintos caminos del mismo nivel.'},
+  {q:'¿DFS marca visitado al encolar o al desapilar?',a:'Al DESAPILAR. Porque el mismo estado puede estar apilado varias veces antes de procesarse.'},
+  {q:'¿BFS/DFS son búsqueda en árbol o en grafo?',a:'En GRAFO. Usan conjunto visitados para no expandir estados ya procesados.'},
+  {q:'¿Qué pasa si se elimina visitados?',a:'Ambos se vuelven búsqueda en árbol y pueden ciclar infinitamente en grafos con ciclos.'},
+  {q:'¿Un grafo finito puede generar árbol infinito?',a:'Sí. Si tiene ciclos y no se controlan visitados, el algoritmo los recorre para siempre.'},
+  {q:'Diferencia entre repetir ESTADO y repetir NODO',a:'Estado: mismo estado alcanzado por múltiples caminos (problema). Nodo: el algoritmo lo procesa más de una vez (algoritmo).'},
+  {q:'¿Por qué BFS es óptimo y DFS no?',a:'BFS explora por niveles — el primer camino a la meta es el más corto. DFS puede encontrar uno largo antes del corto.'},
+  {q:'¿UCS minimiza pasos o costo?',a:'COSTO ACUMULADO g(n), no pasos. Expande siempre el nodo de menor costo total.'},
+  {q:'¿Cuándo BFS y UCS producen la misma solución?',a:'Cuando todos los costos de arista son iguales (uniformes). Minimizar pasos = minimizar costo.'},
+  {q:'¿Qué es IDDFS?',a:'DLS con límites 0,1,2,3... Memoria baja de DFS + optimalidad en pasos de BFS.'},
+  {q:'¿Por qué IDDFS es útil si repite trabajo?',a:'El nivel d genera b^d nodos que dominan. Los niveles anteriores suman solo ~11% (b=10). La ventaja en memoria justifica el costo.'},
+  {q:'¿Qué es path-checking en DLS?',a:'Evitar ciclos dentro del camino actual usando un frozenset. No bloquea entre iteraciones distintas.'},
+  {q:'¿Por qué DLS usa path-checking y no visitados globales?',a:'IDDFS reinicia en cada iteración. Visitados globales bloquearían estados necesarios en niveles más profundos.'},
+  {q:'Diferencia modelo vs algoritmo',a:'Modelo = QUÉ estados son válidos (problema). Algoritmo = CÓMO explorarlos (estrategia).'},
+  {q:'Estado inicial y meta de Devs & Bugs',a:'Inicio: (3,3,0) — todos en inestable. Meta: (0,0,1) — todos en seguro.'},
+  {q:'¿Cuántos estados posibles tienen las Jarras?',a:'(5+1) × (3+1) = 24 estados posibles.'},
+  {q:'¿Cuántos estados posibles tienen Devs & Bugs?',a:'4 × 4 × 2 = 32 estados posibles antes de restricciones, ~16 válidos.'},
+  {q:'Solución óptima de las Jarras',a:'(0,0) → LlenarA → (5,0) → AhaciaB → (2,3) → VaciarB → (2,0) ✓  — 3 pasos.'},
+  {q:'nodos_generados: ¿cuándo se incrementa?',a:'Al AGREGAR un nodo a la frontera (al encolar/apilar).'},
+  {q:'nodos_expandidos: ¿cuándo se incrementa?',a:'Al hacer POP de la frontera (al sacar para procesar).'},
+  {q:'¿Por qué el estado es tupla y no lista?',a:'Inmutable + hashable. Las listas no pueden usarse en sets (visitados) porque son mutables.'},
+];
+let fCur=0;
+function renderF(){
+  document.getElementById('fcq').textContent=cards[fCur].q;
+  document.getElementById('fca').textContent=cards[fCur].a;
+  document.getElementById('fcc').textContent=(fCur+1)+'/'+cards.length;
+  document.getElementById('fprog').style.width=((fCur+1)/cards.length*100)+'%';
+  document.getElementById('fcwrap').classList.remove('flipped');
+}
+function flipCard(){document.getElementById('fcwrap').classList.toggle('flipped');}
+function fStep(d){fCur=Math.max(0,Math.min(cards.length-1,fCur+d));renderF();}
+
+// ── QUIZ ──
+const questions=[
+  {q:'¿Qué estructura usa BFS?',opts:['Pila LIFO','Cola FIFO','Cola de prioridad','Árbol binario'],ans:1,exp:'Cola FIFO — el primero en entrar es el primero en salir. Garantiza exploración nivel por nivel.'},
+  {q:'¿BFS marca visitado al encolar o al desencolar?',opts:['Al desencolar','Al encolar','Nunca','Al generar'],ans:1,exp:'Al encolar. Evita que el mismo estado se encole múltiples veces en el mismo nivel.'},
+  {q:'Experimento 1: ¿cuántos nodos genera BFS árbol?',opts:['4','5','6','3'],ans:2,exp:'6 nodos. Sin visitados, encola A de nuevo cuando C lo genera como sucesor. BFS grafo genera solo 4.'},
+  {q:'¿Cuál garantiza el camino de menor COSTO?',opts:['BFS','DFS','UCS','IDDFS'],ans:2,exp:'UCS expande siempre el nodo de menor g(n) — costo acumulado. Garantía matemática.'},
+  {q:'Con costos B→G(100), D→G(1), ¿qué devuelve BFS?',opts:['A→C→D→G','A→B→G','A→B→C→G','Ninguno'],ans:1,exp:'BFS minimiza PASOS, no costo. A→B→G en 2 pasos, aunque cueste 101.'},
+  {q:'¿Qué es IDDFS?',opts:['DFS con visitados globales','DLS con límite creciente','BFS sin visitados','UCS con heurística'],ans:1,exp:'Ejecuta DLS con límites 0,1,2... Combina memoria de DFS con optimalidad de BFS.'},
+  {q:'Convergencia A→B→D, A→C→D: ¿cuántas veces se genera D en árbol?',opts:['1 vez','2 veces','3 veces','0 veces'],ans:1,exp:'2 veces. Sin visitados, A→B→D y A→C→D encolan D independientemente.'},
+  {q:'Estado inicial de Devs & Bugs',opts:['(0,0,0)','(3,3,1)','(3,3,0)','(0,0,1)'],ans:2,exp:'(3,3,0): 3 devs y 3 bugs en servidor inestable, vehículo en inestable.'},
+  {q:'¿Cuántos pasos tiene la solución óptima de las Jarras?',opts:['2','3','5','7'],ans:1,exp:'3 pasos: LlenarA → AhaciaB → VaciarB → (2,0) meta.'},
+  {q:'b=10, d=10: memoria de BFS vs IDDFS',opts:['Igual','BFS: 10^10, IDDFS: 100','BFS: 100, IDDFS: 10^10','Ambos 10^5'],ans:1,exp:'BFS: O(b^d) = 10^10 nodos. IDDFS: O(b·d) = 100 nodos. Diferencia gigantesca.'},
+  {q:'¿Qué significa que BFS es COMPLETO?',opts:['Termina rápido','Siempre encuentra solución si existe','Siempre es óptimo','Usa poca memoria'],ans:1,exp:'Completo = si existe solución, la encontrará. BFS grafo es completo con b finito.'},
+  {q:'¿Cuál tiene MENOR uso de memoria?',opts:['BFS grafo','UCS','DFS grafo','BFS árbol'],ans:2,exp:'DFS grafo: O(b·m) — solo almacena el camino actual. BFS y UCS usan O(b^d).'},
+];
+let qCur=0,qScore=0,qAns=false;
+function renderQ(){
+  const q=questions[qCur];
+  document.getElementById('qprog').style.width=((qCur+1)/questions.length*100)+'%';
+  document.getElementById('quizQ').textContent=(qCur+1)+'. '+q.q;
+  const opts=document.getElementById('quizOpts');opts.innerHTML='';
+  q.opts.forEach((o,i)=>{const b=document.createElement('button');b.className='quiz-opt';b.textContent=o;b.onclick=()=>selectOpt(i);opts.appendChild(b);});
+  document.getElementById('quizFb').className='quiz-fb';
+  document.getElementById('quizNext').className='quiz-next';
+  qAns=false;
+}
+function selectOpt(i){
+  if(qAns)return; qAns=true;
+  const q=questions[qCur];
+  document.querySelectorAll('.quiz-opt').forEach(b=>b.disabled=true);
+  const fb=document.getElementById('quizFb');
+  if(i===q.ans){qScore++;document.querySelectorAll('.quiz-opt')[i].classList.add('correct');fb.className='quiz-fb ok';fb.textContent='✓ Correcto. '+q.exp;}
+  else{document.querySelectorAll('.quiz-opt')[i].classList.add('wrong');document.querySelectorAll('.quiz-opt')[q.ans].classList.add('correct');fb.className='quiz-fb fail';fb.textContent='✗ Incorrecto. '+q.exp;}
+  document.getElementById('quizNext').className='quiz-next show';
+}
+function nextQ(){
+  qCur++;
+  if(qCur>=questions.length){
+    document.getElementById('quiz-main').style.display='none';
+    document.getElementById('quiz-score').style.display='block';
+    document.getElementById('scoreNum').textContent=qScore+'/'+questions.length;
+    const p=Math.round(qScore/questions.length*100);
+    document.getElementById('scoreSub').textContent=p+'% — '+(p>=80?'¡Listo para mañana! 🎯':p>=60?'Casi, repasa las incorrectas':'Repasa los conceptos clave');
+  } else renderQ();
+}
+function restartQuiz(){qCur=0;qScore=0;document.getElementById('quiz-main').style.display='block';document.getElementById('quiz-score').style.display='none';renderQ();}
+
+// ── TRAMPA TOGGLE ──
+function tog(btn){const a=btn.nextElementSibling;a.classList.toggle('show');btn.textContent=a.classList.contains('show')?'Ocultar respuesta':'Ver respuesta';}
+
+// ── PANEL SWITCH ──
+function show(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('p-'+id).classList.add('active');
+  btn.classList.add('active');
+  [gTim,jTim,dTim,uTim,iTim].forEach(t=>clearInterval(t));gTim=jTim=dTim=uTim=iTim=null;
+  document.getElementById('gplay').textContent='▶';
+}
+
+// INIT
+setAlgo('bfs'); renderJ(); renderD(); renderF(); renderQ(); renderU(); renderI();
+</script>
+</body>
+</html>
