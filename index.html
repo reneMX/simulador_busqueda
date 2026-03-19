@@ -84,8 +84,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .counter-lbl{font-size:10px;color:var(--muted);margin-top:2px}
 
 /* CODE */
-.codeline{padding:3px 8px;border-radius:4px;font-size:11px;font-family:var(--mono);color:var(--muted);line-height:1.9;transition:.2s}
-.codeline.hl{background:rgba(108,99,255,.2);color:var(--accent2)}
+.codeline{padding:3px 6px 3px 22px;border-radius:3px;font-size:11.5px;font-family:var(--font-mono);color:#6b7280;line-height:2;transition:background .15s,color .15s;position:relative;white-space:pre}
+.codeline.hl{background:rgba(108,99,255,.22);color:#e0d7ff;border-left:2px solid var(--accent2);padding-left:20px;border-radius:0 3px 3px 0}
+.codeline.hl::before{content:'▶';position:absolute;left:5px;color:var(--accent2);font-size:9px;top:50%;transform:translateY(-50%)}
+.code-wrap{background:#080810;border-radius:var(--radius-sm);padding:10px 4px;overflow-y:auto;max-height:320px;border:1px solid rgba(108,99,255,.15)}
 
 /* JARS */
 .jars-wrap{display:flex;gap:24px;align-items:flex-end;justify-content:center;padding:16px 0}
@@ -833,6 +835,25 @@ const dfsS=[
 
 let algo='bfs',gCur=0,gTim=null;
 
+function renderCode(containerId, lines, hlArr){
+  const wrap = document.getElementById(containerId);
+  if(!wrap) return;
+  wrap.innerHTML = '<div class="code-wrap" id="cw-'+containerId+'">'+
+    lines.map((l,i)=>{
+      const isHl = hlArr && hlArr.includes(i);
+      const safe = l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return `<div class="codeline${isHl?' hl':''}" data-line="${i}">${safe}</div>`;
+    }).join('')+'</div>';
+  // auto-scroll to first highlighted line
+  if(hlArr && hlArr.length){
+    requestAnimationFrame(()=>{
+      const cw = document.getElementById('cw-'+containerId);
+      const first = cw && cw.querySelector('.codeline.hl');
+      if(first && cw) cw.scrollTop = Math.max(0, first.offsetTop - cw.offsetTop - 40);
+    });
+  }
+}
+
 function setAlgo(a){
   algo=a; gCur=0; clearInterval(gTim); gTim=null;
   document.getElementById('gplay').textContent='▶';
@@ -877,7 +898,7 @@ function renderG(){
   document.getElementById('gp').disabled=gCur===0;
   document.getElementById('gn').disabled=gCur===steps.length-1;
   const code=algo==='bfs'?bfsCode:dfsCode;
-  document.getElementById('codeblock').innerHTML=code.map((l,i)=>`<div class="codeline${s.hl.includes(i)?' hl':''}">${l}</div>`).join('');
+  renderCode('codeblock', code, s.hl);
 }
 function gStep(d){gCur=Math.max(0,Math.min((algo==='bfs'?bfsS:dfsS).length-1,gCur+d));renderG();}
 function gPlay(){
@@ -888,13 +909,13 @@ function gPlay(){
 
 // ── JARS ──
 const jS=[
-  {b:0,s:0,F:['(0,0)'],V:['(0,0)'],act:'Inicio: estado (0,0). BFS encola (0,0).',arr:'',an:''},
-  {b:5,s:0,F:['(0,3)','(5,0)'],V:['(0,0)'],act:'Pop (0,0) → LlenarA→(5,0), LlenarB→(0,3). Ambos encolados.',arr:'→',an:'Expandiendo (0,0)'},
-  {b:5,s:3,F:['(5,0)','(5,3)'],V:['(0,0)','(0,3)'],act:'Pop (0,3) → LlenarA→(5,3). BFS sigue nivel por nivel.',arr:'↑',an:'LlenarA + ya visto'},
-  {b:5,s:0,F:['(2,3)'],V:['(0,0)','(0,3)','(5,3)','(5,0)'],act:'Pop (5,0) → AhaciaB → (2,3). Pasar de grande a pequeña.',arr:'→',an:'AhaciaB'},
-  {b:2,s:3,F:['(2,3)'],V:['(0,0)','(0,3)','(5,3)','(5,0)'],act:'Estado (2,3) encolado.',arr:'≡',an:'(2,3) en frontera'},
-  {b:2,s:0,F:['(2,0)'],V:['(0,0)','(0,3)','(5,3)','(5,0)','(2,3)'],act:'Pop (2,3) → VaciarB → (2,0). Vaciar jarra pequeña.',arr:'↓',an:'VaciarB'},
-  {b:2,s:0,F:[],V:['(0,0)','(0,3)','(5,3)','(5,0)','(2,3)','(2,0)'],act:'🎯 Pop (2,0) = META. LlenarA → AhaciaB → VaciarB. Longitud: 3.',arr:'✓',an:'¡META! (2,0)'},
+  {b:0,s:0,F:['(0,0)'],V:['(0,0)'],act:'Inicio: BFS encola (0,0). Se llama a getStartState().',arr:'',an:'',hl:[6]},
+  {b:5,s:0,F:['(0,3)','(5,0)'],V:['(0,0)'],act:'Pop (0,0). getSuccessors genera LlenarA→(5,0) y LlenarB→(0,3). Ambos encolados.',arr:'→',an:'Expandiendo (0,0)',hl:[9,10,11,13,14]},
+  {b:5,s:3,F:['(5,0)','(5,3)'],V:['(0,0)','(0,3)'],act:'Pop (0,3). isGoalState? No. getSuccessors genera (5,3). LlenarB ya visitado.',arr:'↑',an:'LlenarA + ya visto',hl:[7,9,10,11,13,14]},
+  {b:5,s:0,F:['(2,3)'],V:['(0,0)','(0,3)','(5,3)','(5,0)'],act:'Pop (5,0). getSuccessors: AhaciaB calcula mover=min(5, 3-0)=3 → nuevo estado (2,3).',arr:'→',an:'AhaciaB',hl:[9,10,18,19,20]},
+  {b:2,s:3,F:['(2,3)'],V:['(0,0)','(0,3)','(5,3)','(5,0)'],act:'Estado (2,3) encolado. La jarra grande tiene 2L y la pequeña 3L.',arr:'≡',an:'(2,3) en frontera',hl:[9,20,24]},
+  {b:2,s:0,F:['(2,0)'],V:['(0,0)','(0,3)','(5,3)','(5,0)','(2,3)'],act:'Pop (2,3). getSuccessors: VaciarB → (2,0). mover=0 en AhaciaB ya no aplica.',arr:'↓',an:'VaciarB',hl:[9,10,15,16,17]},
+  {b:2,s:0,F:[],V:['(0,0)','(0,3)','(5,3)','(5,0)','(2,3)','(2,0)'],act:'🎯 Pop (2,0). isGoalState((2,0)) == (2,0) → True. ¡Retornar camino! Longitud: 3.',arr:'✓',an:'¡META! (2,0)',hl:[7]},
 ];
 let jCur=0,jTim=null;
 function renderJ(){
@@ -914,24 +935,63 @@ function renderJ(){
   else{fEl.innerHTML='<span class="ds-empty" style="color:#22d3a0">✓ Solución encontrada</span>';}
   const vEl=document.getElementById('jvis');vEl.innerHTML='';
   s.V.forEach(x=>{const el=document.createElement('div');el.className='ds-item vis';el.textContent=x;vEl.appendChild(el);});
+  renderCode('jcode', jarrasCode, s.hl);
 }
 function jStep(d){jCur=Math.max(0,Math.min(jS.length-1,jCur+d));renderJ();}
 function jPlay(){if(jTim){clearInterval(jTim);jTim=null;return;}jTim=setInterval(()=>{if(jCur>=jS.length-1){clearInterval(jTim);jTim=null;return;}jCur++;renderJ();},1800);}
 
 // ── DEVS ──
+const devsCode=[
+'class AdministradoresHackers:',
+'    TOTAL = 3',
+'    CAP   = 2',
+' ',
+'    def getStartState(self): return (3, 3, 0)',
+'    def isGoalState(self, s): return s == (0, 0, 1)',
+' ',
+'    def es_estado_valido(self, state):',
+'        ai, bi, _ = state',
+'        T = self.TOTAL',
+'        if not (0 <= ai <= T and 0 <= bi <= T): return False',
+'        if ai > 0 and bi > ai:          return False  # inestable',
+'        if (T-ai)>0 and (T-bi)>(T-ai): return False  # seguro',
+'        return True',
+' ',
+'    def getSuccessors(self, state):',
+'        ai, bi, lado = state',
+'        sucesores = []',
+'        for da in range(self.CAP + 1):',
+'            for db in range(self.CAP + 1):',
+'                if not (1 <= da+db <= self.CAP): continue',
+'                if lado == 0:  # cruzar a seguro',
+'                    if da > ai or db > bi: continue',
+'                    nuevo = (ai-da, bi-db, 1)',
+'                    acc = f"Cruzar({da}dev,{db}bug)->Seguro"',
+'                else:          # regresar a inestable',
+'                    ds,bs = self.TOTAL-ai, self.TOTAL-bi',
+'                    if da > ds or db > bs: continue',
+'                    nuevo = (ai+da, bi+db, 0)',
+'                    acc = f"Regresar({da}dev,{db}bug)->Inestable"',
+'                if self.es_estado_valido(nuevo):',
+'                    sucesores.append((nuevo, acc, 1))',
+'        return sucesores',
+' ',
+'    def getCostOfActions(self, actions):',
+'        return len(actions) if actions else 0'];
+
 const dS=[
-  {di:3,bi:3,veh:[],vl:0,arr:'',det:'Estado inicial (3,3,0). Todos en servidor inestable. BFS comienza.'},
-  {di:3,bi:1,veh:['B','B'],vl:1,arr:'→',det:'Paso 1 → Cruzar 2 bugs al seguro. Estado: (3,1,1).'},
-  {di:3,bi:2,veh:['B'],vl:0,arr:'←',det:'Paso 2 ← Regresar 1 bug. Estado: (3,2,0).'},
-  {di:3,bi:0,veh:['B','B'],vl:1,arr:'→',det:'Paso 3 → Cruzar 2 bugs más. Estado: (3,0,1).'},
-  {di:3,bi:1,veh:['B'],vl:0,arr:'←',det:'Paso 4 ← Regresar 1 bug. Estado: (3,1,0). Necesario para mantener restricción.'},
-  {di:1,bi:1,veh:['D','D'],vl:1,arr:'→',det:'Paso 5 → Cruzar 2 devs. Estado: (1,1,1). Inestable: 1dev,1bug — OK.'},
-  {di:2,bi:2,veh:['D','B'],vl:0,arr:'←',det:'Paso 6 ← Regresar 1dev+1bug. Estado: (2,2,0).'},
-  {di:0,bi:2,veh:['D','D'],vl:1,arr:'→',det:'Paso 7 → Cruzar 2 devs. Estado: (0,2,1). 0 devs en inestable → sin restricción.'},
-  {di:0,bi:3,veh:['B'],vl:0,arr:'←',det:'Paso 8 ← Regresar 1 bug. Estado: (0,3,0).'},
-  {di:0,bi:1,veh:['B','B'],vl:1,arr:'→',det:'Paso 9 → Cruzar 2 bugs. Estado: (0,1,1).'},
-  {di:0,bi:2,veh:['B'],vl:0,arr:'←',det:'Paso 10 ← Regresar 1 bug. Estado: (0,2,0).'},
-  {di:0,bi:0,veh:['B','B'],vl:1,arr:'→',det:'🎯 Paso 11 → Cruzar últimos 2 bugs. Estado: (0,0,1). ¡META! Longitud: 11, Costo: 25.'},
+  {di:3,bi:3,veh:[],vl:0,arr:'',det:'Estado inicial. getStartState() retorna (3,3,0). Todos en servidor inestable.',hl:[4]},
+  {di:3,bi:1,veh:['B','B'],vl:1,arr:'→',det:'Paso 1 → Cruzar 2 bugs. getSuccessors: lado==0, da=0,db=2, es_estado_valido(3,1,1)=True.',hl:[15,16,17,18,19,21,22,23,24,30,31]},
+  {di:3,bi:2,veh:['B'],vl:0,arr:'←',det:'Paso 2 ← Regresar 1 bug. getSuccessors: lado==1, da=0,db=1. es_estado_valido(3,2,0)=True.',hl:[15,16,18,19,25,26,27,28,29,30,31]},
+  {di:3,bi:0,veh:['B','B'],vl:1,arr:'→',det:'Paso 3 → Cruzar 2 bugs más. getSuccessors: lado==0, da=0,db=2. Estado (3,0,1).',hl:[15,16,21,22,23,24,30,31]},
+  {di:3,bi:1,veh:['B'],vl:0,arr:'←',det:'Paso 4 ← Regresar 1 bug. Necesario: si no regresa, al cruzar devs quedarían solos con bugs.',hl:[15,16,25,26,28,29,30,31]},
+  {di:1,bi:1,veh:['D','D'],vl:1,arr:'→',det:'Paso 5 → Cruzar 2 devs. es_estado_valido(1,1,1): inestable 1≤1 ✓, seguro 2≤2 ✓.',hl:[15,16,21,23,24,7,10,11,12,13,30,31]},
+  {di:2,bi:2,veh:['D','B'],vl:0,arr:'←',det:'Paso 6 ← Regresar 1dev+1bug. getSuccessors: lado==1, da=1,db=1. Estado (2,2,0).',hl:[15,16,25,26,27,28,29,30,31]},
+  {di:0,bi:2,veh:['D','D'],vl:1,arr:'→',det:'Paso 7 → Cruzar 2 devs. Estado (0,2,1). Inestable: 0 devs → sin restricción. es_estado_valido ✓.',hl:[15,16,21,23,24,7,10,30,31]},
+  {di:0,bi:3,veh:['B'],vl:0,arr:'←',det:'Paso 8 ← Regresar 1 bug. Estado (0,3,0). 0 devs en inestable → sin restricción.',hl:[15,16,25,26,28,29,30,31]},
+  {di:0,bi:1,veh:['B','B'],vl:1,arr:'→',det:'Paso 9 → Cruzar 2 bugs. Estado (0,1,1). Quedan 1 bug en inestable.',hl:[15,16,21,23,24,30,31]},
+  {di:0,bi:2,veh:['B'],vl:0,arr:'←',det:'Paso 10 ← Regresar 1 bug. Estado (0,2,0). Un último viaje necesario.',hl:[15,16,25,28,29,30,31]},
+  {di:0,bi:0,veh:['B','B'],vl:1,arr:'→',det:'🎯 Paso 11 → Cruzar 2 bugs. isGoalState((0,0,1))==True. ¡META! Longitud:11, Costo:25.',hl:[5]},
 ];
 let dCur=0,dTim=null;
 function mkE(t){const e=document.createElement('div');e.className='entity '+(t==='D'?'dev-e':'bug-e');e.textContent=t;return e;}
@@ -956,6 +1016,7 @@ function renderD(){
   document.getElementById('dstate').textContent=`(${s.di}, ${s.bi}, ${s.vl})`;
   document.getElementById('ddetail').textContent=s.det;
   document.getElementById('dc').textContent=dCur+'/11';
+  renderCode('dcode', devsCode, s.hl);
 }
 function dStep(d){dCur=Math.max(0,Math.min(dS.length-1,dCur+d));renderD();}
 function dPlay(){if(dTim){clearInterval(dTim);dTim=null;return;}dTim=setInterval(()=>{if(dCur>=dS.length-1){clearInterval(dTim);dTim=null;return;}dCur++;renderD();},1800);}
@@ -1044,7 +1105,7 @@ function renderU(){
   document.getElementById('uc').textContent=(uCur+1)+'/'+uS.length;
   document.getElementById('up').disabled=uCur===0;
   document.getElementById('un').disabled=uCur===uS.length-1;
-  document.getElementById('ucodeblock').innerHTML=ucsCode.map((l,i)=>`<div class="codeline${s.hl.includes(i)?' hl':''}">${l}</div>`).join('');
+  renderCode('ucodeblock', ucsCode, s.hl);
 }
 function uStep(d){uCur=Math.max(0,Math.min(uS.length-1,uCur+d));renderU();}
 function uPlay(){if(uTim){clearInterval(uTim);uTim=null;document.getElementById('uplay').textContent='▶';return;}document.getElementById('uplay').textContent='⏸';uTim=setInterval(()=>{if(uCur>=uS.length-1){clearInterval(uTim);uTim=null;document.getElementById('uplay').textContent='▶';return;}uCur++;renderU();},1800);}
@@ -1118,7 +1179,7 @@ function renderI(){
   document.getElementById('ic').textContent=(iCur+1)+'/'+iS.length;
   document.getElementById('ip').disabled=iCur===0;
   document.getElementById('in').disabled=iCur===iS.length-1;
-  document.getElementById('icodeblock').innerHTML=iddfsCode.map((l,i)=>`<div class="codeline${s.hl.includes(i)?' hl':''}">${l}</div>`).join('');
+  renderCode('icodeblock', iddfsCode, s.hl);
 }
 function iStep(d){iCur=Math.max(0,Math.min(iS.length-1,iCur+d));renderI();}
 function iPlay(){if(iTim){clearInterval(iTim);iTim=null;document.getElementById('iplay').textContent='▶';return;}document.getElementById('iplay').textContent='⏸';iTim=setInterval(()=>{if(iCur>=iS.length-1){clearInterval(iTim);iTim=null;document.getElementById('iplay').textContent='▶';return;}iCur++;renderI();},1800);}
@@ -1306,49 +1367,6 @@ const jarrasCode=[
 ' ',
 '    def getCostOfActions(self, actions):',
 '        return len(actions) if actions else 0'];
-
-document.getElementById('jcode').innerHTML=jarrasCode.map(l=>`<div class="codeline">${l.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`).join('');
-
-// ── DEVS CODE ──
-const devsCode=[
-'class AdministradoresHackers:',
-'    TOTAL = 3',
-'    CAP   = 2',
-' ',
-'    def getStartState(self): return (3, 3, 0)',
-'    def isGoalState(self, s): return s == (0, 0, 1)',
-' ',
-'    def es_estado_valido(self, state):',
-'        ai, bi, _ = state',
-'        T = self.TOTAL',
-'        if not (0 <= ai <= T and 0 <= bi <= T): return False',
-'        if ai > 0 and bi > ai:          return False  # inestable',
-'        if (T-ai)>0 and (T-bi)>(T-ai): return False  # seguro',
-'        return True',
-' ',
-'    def getSuccessors(self, state):',
-'        ai, bi, lado = state',
-'        sucesores = []',
-'        for da in range(self.CAP + 1):',
-'            for db in range(self.CAP + 1):',
-'                if not (1 <= da+db <= self.CAP): continue',
-'                if lado == 0:  # cruzar → seguro',
-'                    if da > ai or db > bi: continue',
-'                    nuevo = (ai-da, bi-db, 1)',
-'                    acc = f"Cruzar({da}dev,{db}bug)->Seguro"',
-'                else:          # regresar → inestable',
-'                    ds,bs = self.TOTAL-ai, self.TOTAL-bi',
-'                    if da > ds or db > bs: continue',
-'                    nuevo = (ai+da, bi+db, 0)',
-'                    acc = f"Regresar({da}dev,{db}bug)->Inestable"',
-'                if self.es_estado_valido(nuevo):',
-'                    sucesores.append((nuevo, acc, 1))',
-'        return sucesores',
-' ',
-'    def getCostOfActions(self, actions):',
-'        return len(actions) if actions else 0'];
-
-document.getElementById('dcode').innerHTML=devsCode.map(l=>`<div class="codeline">${l.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`).join('');
 
 // ── FLASHCARDS ──
 const cards=[
