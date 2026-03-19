@@ -184,6 +184,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
   <button class="nav-tab" onclick="show('devs',this)">Devs & Bugs</button>
   <button class="nav-tab" onclick="show('ucs',this)">UCS</button>
   <button class="nav-tab" onclick="show('iddfs',this)">IDDFS</button>
+  <button class="nav-tab" onclick="show('arbol',this)">Árbol vs Grafo</button>
+  <button class="nav-tab" onclick="show('cuando',this)">¿Cuándo usar?</button>
   <button class="nav-tab" onclick="show('flash',this)">Flashcards</button>
   <button class="nav-tab" onclick="show('quiz',this)">Examen</button>
   <button class="nav-tab" onclick="show('compare',this)">Comparar</button>
@@ -237,7 +239,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <button class="ctrl-btn ctrl-play" onclick="gPlay()" id="gplay">▶</button>
   </div>
   <div class="card">
-    <div class="card-title" id="code-title">Pseudocódigo — BFS</div>
+    <div class="card-title" id="code-title">Código Python — BFS</div>
     <div id="codeblock"></div>
   </div>
 </div>
@@ -281,6 +283,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <button class="ctrl-btn" onclick="jStep(1)">Sig. →</button>
     <button class="ctrl-btn ctrl-play" onclick="jPlay()">▶</button>
   </div>
+  <div class="card" style="margin-top:10px">
+    <div class="card-title">Código Python — problems/jarras.py</div>
+    <div id="jcode"></div>
+  </div>
 </div>
 
 <!-- ───── DEVS ───── -->
@@ -318,6 +324,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <button class="ctrl-btn ctrl-play" onclick="dPlay()">▶</button>
   </div>
   <div class="action-box" id="ddetail" style="margin-top:0"></div>
+  <div class="card" style="margin-top:10px">
+    <div class="card-title">Código Python — problems/administradores.py</div>
+    <div id="dcode"></div>
+  </div>
 </div>
 
 <!-- ───── UCS ───── -->
@@ -374,7 +384,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <button class="ctrl-btn ctrl-play" onclick="uPlay()" id="uplay">▶</button>
   </div>
   <div class="card" style="margin-top:0">
-    <div class="card-title">Pseudocódigo — UCS</div>
+    <div class="card-title">Código Python — UCS</div>
     <div id="ucodeblock"></div>
   </div>
   <div class="card" style="margin-top:10px;background:rgba(34,211,160,.05);border-color:rgba(34,211,160,.2)">
@@ -441,7 +451,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <button class="ctrl-btn ctrl-play" onclick="iPlay()" id="iplay">▶</button>
   </div>
   <div class="card" style="margin-top:0">
-    <div class="card-title">Pseudocódigo — IDDFS + DLS</div>
+    <div class="card-title">Código Python — IDDFS + DLS</div>
     <div id="icodeblock"></div>
   </div>
   <div class="card" style="margin-top:10px;background:rgba(108,99,255,.05);border-color:rgba(108,99,255,.2)">
@@ -452,6 +462,187 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
       <tr class="hi"><td>IDDFS</td><td>8</td><td>7</td><td><span class="yes">O(b·d)</span></td><td>2</td></tr>
     </table>
     <div style="font-size:11px;color:var(--muted);margin-top:8px">IDDFS genera más nodos pero usa drásticamente menos memoria. Con b=10, d=10: BFS=10^10 nodos, IDDFS=100 nodos.</div>
+  </div>
+</div>
+
+<!-- ───── ÁRBOL vs GRAFO ───── -->
+<div class="panel" id="p-arbol">
+  <div class="algo-row">
+    <button class="algo-btn active" id="at-bfs" onclick="setArbol('bfs')">BFS árbol (sin visitados)</button>
+    <button class="algo-btn" id="at-dfs" onclick="setArbol('dfs')">DFS árbol (sin visitados)</button>
+  </div>
+
+  <div class="card" style="background:rgba(248,113,113,.05);border-color:rgba(248,113,113,.2);margin-bottom:10px">
+    <div class="card-title" style="color:var(--red)">⚠ Sin visitados — búsqueda en ÁRBOL</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6" id="arbol-warning">Sin conjunto visitados, el algoritmo puede encolear/apilar el mismo estado múltiples veces. En grafos con ciclos puede no terminar nunca.</div>
+  </div>
+
+  <div class="graph-wrap">
+    <svg viewBox="0 0 340 150" width="100%" height="150">
+      <defs>
+        <marker id="mat" markerWidth="7" markerHeight="7" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#555"/></marker>
+        <marker id="mat-p" markerWidth="7" markerHeight="7" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#22d3a0"/></marker>
+        <marker id="mat-r" markerWidth="7" markerHeight="7" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#f87171"/></marker>
+        <marker id="mat-a" markerWidth="7" markerHeight="7" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#fbbf24"/></marker>
+      </defs>
+      <line id="at-AB" x1="74" y1="88" x2="145" y2="88" stroke="#333" stroke-width="2" marker-end="url(#mat)"/>
+      <line id="at-BC" x1="193" y1="88" x2="258" y2="88" stroke="#333" stroke-width="2" marker-end="url(#mat)"/>
+      <path id="at-CA" d="M252,72 Q175,10 88,72" stroke="#333" stroke-width="2" fill="none" marker-end="url(#mat)"/>
+      <line id="at-CG" x1="284" y1="72" x2="305" y2="48" stroke="#333" stroke-width="2" marker-end="url(#mat)"/>
+      <g id="at-A"><circle cx="52" cy="88" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="52" y="93" text-anchor="middle" font-size="15" font-weight="700" fill="#888" font-family="Sora,sans-serif">A</text></g>
+      <g id="at-B"><circle cx="169" cy="88" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="169" y="93" text-anchor="middle" font-size="15" font-weight="700" fill="#888" font-family="Sora,sans-serif">B</text></g>
+      <g id="at-C"><circle cx="274" cy="88" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="274" y="93" text-anchor="middle" font-size="15" font-weight="700" fill="#888" font-family="Sora,sans-serif">C</text></g>
+      <g id="at-G"><circle cx="322" cy="34" r="22" fill="#1a1a24" stroke="#444" stroke-width="2"/><text x="322" y="39" text-anchor="middle" font-size="15" font-weight="700" fill="#888" font-family="Sora,sans-serif">G</text></g>
+      <text x="52" y="118" text-anchor="middle" font-size="9" fill="#444" font-family="Sora,sans-serif">inicio</text>
+      <text x="322" y="64" text-anchor="middle" font-size="9" fill="#444" font-family="Sora,sans-serif">meta</text>
+    </svg>
+  </div>
+
+  <div class="card">
+    <div class="card-title" id="at-ds-title">Cola (FIFO) — Frontera SIN filtro de visitados</div>
+    <div style="font-size:10px;color:var(--red);margin-bottom:6px">Los estados pueden aparecer MÚLTIPLES VECES en la frontera</div>
+    <div class="ds-row" id="at-F"></div>
+    <div class="counter-row">
+      <div class="counter"><div class="counter-val" id="at-cg">0</div><div class="counter-lbl">generados</div></div>
+      <div class="counter"><div class="counter-val" id="at-ce">0</div><div class="counter-lbl">expandidos</div></div>
+      <div class="counter"><div class="counter-val" id="at-dup" style="color:var(--red)">0</div><div class="counter-lbl">duplicados</div></div>
+    </div>
+  </div>
+
+  <div class="action-box" id="at-act">Sin visitados: el mismo estado puede aparecer múltiples veces. Observa cómo A se encola de nuevo.</div>
+  <div class="controls">
+    <button class="ctrl-btn" onclick="atStep(-1)" id="at-prev" disabled>← Ant.</button>
+    <span class="step-info" id="at-cnt">1/8</span>
+    <button class="ctrl-btn" onclick="atStep(1)" id="at-next">Sig. →</button>
+    <button class="ctrl-btn ctrl-play" onclick="atPlay()" id="at-play">▶</button>
+  </div>
+
+  <!-- Árbol visual -->
+  <div class="card" style="margin-top:0">
+    <div class="card-title">Árbol de búsqueda generado</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:8px">El mismo estado puede aparecer múltiples veces en distintas ramas</div>
+    <svg id="tree-svg" viewBox="0 0 320 180" width="100%" height="180">
+      <!-- Árbol generado dinámicamente por JS -->
+    </svg>
+  </div>
+
+  <!-- Comparativa grafo vs árbol -->
+  <div class="card" style="background:rgba(108,99,255,.05);border-color:rgba(108,99,255,.2)">
+    <div class="card-title" style="color:var(--accent2)">Resultado final — Grafo vs Árbol</div>
+    <table class="ctable" style="margin:0">
+      <tr><th>Variante</th><th>Generados</th><th>Expandidos</th><th>Termina</th><th>Longitud</th></tr>
+      <tr class="hi"><td id="at-res1-name">BFS grafo</td><td>4</td><td>4</td><td><span class="yes">Sí</span></td><td>3</td></tr>
+      <tr><td id="at-res2-name">BFS árbol</td><td>6</td><td>5</td><td><span class="maybe">Sí*</span></td><td>3</td></tr>
+    </table>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px">(*) Solo termina porque G está a profundidad 3. Con meta inalcanzable, árbol no terminaría.</div>
+  </div>
+</div>
+
+<!-- ───── CUÁNDO USAR ───── -->
+<div class="panel" id="p-cuando">
+  <div style="font-size:12px;color:var(--muted);padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:14px;line-height:1.6;border-left:3px solid var(--accent)">Cada algoritmo brilla en situaciones específicas. Aquí 3 ejemplos reales de cuándo usar cada uno.</div>
+
+  <!-- BFS -->
+  <div class="card" style="border-color:rgba(34,211,160,.25)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <div style="background:rgba(34,211,160,.15);border:1px solid rgba(34,211,160,.3);border-radius:var(--radius-sm);padding:6px 12px;font-size:13px;font-weight:700;color:var(--green)">BFS</div>
+      <div style="font-size:12px;color:var(--muted)">Cola FIFO · Óptimo en pasos · Memoria alta</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:4px">Ejemplo 1 — GPS: ruta con menos semáforos</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">Quieres llegar de casa al trabajo cruzando el menor número de intersecciones posible, sin importar la distancia. BFS garantiza el camino con menos pasos (intersecciones). Uber y Google Maps usan variantes de BFS para minimizar número de giros o semáforos.</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:4px">Ejemplo 2 — Red social: grados de separación</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">LinkedIn usa BFS para encontrar "conexiones de 2do y 3er grado". El algoritmo expande por niveles: amigos directos (nivel 1), amigos de amigos (nivel 2), etc. BFS garantiza que encontrará el camino más corto en número de conexiones.</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:4px">Ejemplo 3 — Puzzle: Cubo Rubik mínimo de movimientos</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">Para encontrar la solución en el menor número de movimientos posible (God's Algorithm = máximo 20 movimientos). BFS explora por niveles de profundidad garantizando que la primera solución encontrada tiene el mínimo de giros.</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;padding:8px 10px;background:rgba(34,211,160,.07);border-radius:var(--radius-sm);font-size:11px;color:var(--green)">Usar BFS cuando: todos los costos son iguales y necesitas la solución de menor número de pasos. Memoria no es restricción.</div>
+  </div>
+
+  <!-- DFS -->
+  <div class="card" style="border-color:rgba(251,191,36,.25);margin-top:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <div style="background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.3);border-radius:var(--radius-sm);padding:6px 12px;font-size:13px;font-weight:700;color:var(--amber)">DFS</div>
+      <div style="font-size:12px;color:var(--muted)">Pila LIFO · No óptimo · Memoria baja</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:4px">Ejemplo 1 — Laberinto: ¿existe una salida?</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">En un laberinto enorme, solo necesitas saber si existe alguna salida (no la más corta). DFS va recto hasta el fondo de cada pasillo. Si el laberinto es profundo pero estrecho, DFS usa poca memoria y encuentra la salida rápidamente siguiendo una rama.</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:4px">Ejemplo 2 — Compiladores: análisis sintáctico</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">Cuando un compilador analiza código fuente, recorre el árbol de sintaxis abstracta (AST) con DFS. Primero termina de analizar una expresión completa antes de pasar a la siguiente. El árbol es profundo y DFS lo recorre naturalmente con poca memoria.</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:4px">Ejemplo 3 — Videojuegos: exploración de dungeon</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">Un NPC explorando un dungeon procedural muy grande. No necesita la ruta óptima, solo explorar habitaciones. DFS es perfecto: poca memoria, va habitación por habitación hasta el fondo, retrocede cuando llega a un callejón sin salida. El espacio de estados puede ser enorme.</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;padding:8px 10px;background:rgba(251,191,36,.07);border-radius:var(--radius-sm);font-size:11px;color:var(--amber)">Usar DFS cuando: solo necesitas saber si existe solución (no la más corta), el espacio es profundo y la memoria es crítica.</div>
+  </div>
+
+  <!-- UCS -->
+  <div class="card" style="border-color:rgba(167,139,250,.25);margin-top:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <div style="background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);border-radius:var(--radius-sm);padding:6px 12px;font-size:13px;font-weight:700;color:var(--accent2)">UCS</div>
+      <div style="font-size:12px;color:var(--muted)">Cola prioridad · Óptimo en costo · Memoria alta</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:4px">Ejemplo 1 — GPS: ruta más barata en casetas</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">Viajar de CDMX a Guadalajara por autopista. Cada tramo tiene un costo de caseta diferente. UCS garantiza encontrar el camino de menor costo total en casetas, aunque implique más kilómetros. Es el algoritmo detrás de Dijkstra (UCS = Dijkstra en grafos).</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:4px">Ejemplo 2 — Redes: paquetes por ruta de menor latencia</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">Un router enviando datos al servidor más rápido. Cada enlace entre routers tiene una latencia diferente (ms). UCS expande siempre el camino de menor latencia acumulada, garantizando que el paquete llega por la ruta más rápida. OSPF (protocolo de internet) usa este principio.</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:4px">Ejemplo 3 — Juegos: menor costo de acciones</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">En un RPG, moverse por distintos terrenos tiene diferentes costos de energía: camino=1, bosque=3, montaña=5, pantano=8. BFS encontraría la ruta con menos pasos pero atravesando montañas. UCS encuentra la ruta que gasta menos energía total, aunque tenga más pasos.</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;padding:8px 10px;background:rgba(167,139,250,.07);border-radius:var(--radius-sm);font-size:11px;color:var(--accent2)">Usar UCS cuando: los costos de las acciones son distintos y necesitas minimizar el costo total del camino.</div>
+  </div>
+
+  <!-- IDDFS -->
+  <div class="card" style="border-color:rgba(96,165,250,.25);margin-top:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <div style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);border-radius:var(--radius-sm);padding:6px 12px;font-size:13px;font-weight:700;color:var(--blue)">IDDFS</div>
+      <div style="font-size:12px;color:var(--muted)">Pila + límite · Óptimo en pasos · Memoria baja</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:4px">Ejemplo 1 — Ajedrez: buscar jugada en N movimientos</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">Un motor de ajedrez buscando jaque mate. El árbol de ajedrez tiene b≈35 movimientos posibles por turno. BFS a profundidad 10 requeriría 35^10 ≈ 2.8 billones de nodos en memoria. IDDFS usa O(b·d) = 350 nodos, explorando igual de completo pero sin colapsar la RAM.</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:4px">Ejemplo 2 — Robot en espacio desconocido</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">Un robot explorando un edificio sin mapa previo. No sabe a qué profundidad está la salida. IDDFS es perfecto: empieza con profundidad 1, va aumentando. No desperdicia memoria almacenando todos los estados posibles, y garantiza encontrar la salida más cercana cuando la encuentre.</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:4px">Ejemplo 3 — Problema 15-puzzle (15 fichas)</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">El clásico juego de deslizar fichas numeradas. Tiene 16!/2 ≈ 10^13 estados posibles. BFS es imposible por memoria. La profundidad de la solución puede ser hasta 80 movimientos. IDDFS (o IDA*) es el algoritmo estándar para resolverlo: memoria lineal, solución óptima en pasos.</div>
+      </div>
+    </div>
+    <div style="margin-top:10px;padding:8px 10px;background:rgba(96,165,250,.07);border-radius:var(--radius-sm);font-size:11px;color:var(--blue)">Usar IDDFS cuando: el espacio es enorme, la profundidad es desconocida y la memoria es la restricción principal. Costos uniformes.</div>
+  </div>
+
+  <!-- Resumen -->
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">Regla de decisión rápida</div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
+      <div style="padding:8px;background:rgba(34,211,160,.07);border-radius:var(--radius-sm);border-left:3px solid var(--green)"><b style="color:var(--green)">BFS:</b> ¿Necesitas el camino más corto en pasos y tienes memoria suficiente?</div>
+      <div style="padding:8px;background:rgba(251,191,36,.07);border-radius:var(--radius-sm);border-left:3px solid var(--amber)"><b style="color:var(--amber)">DFS:</b> ¿Solo necesitas saber si existe solución (no la óptima) y la memoria es escasa?</div>
+      <div style="padding:8px;background:rgba(167,139,250,.07);border-radius:var(--radius-sm);border-left:3px solid var(--accent2)"><b style="color:var(--accent2)">UCS:</b> ¿Los costos de las acciones son distintos y necesitas minimizar el costo total?</div>
+      <div style="padding:8px;background:rgba(96,165,250,.07);border-radius:var(--radius-sm);border-left:3px solid var(--blue)"><b style="color:var(--blue)">IDDFS:</b> ¿Espacio enorme, profundidad desconocida, memoria limitada y costos uniformes?</div>
+    </div>
   </div>
 </div>
 
@@ -583,31 +774,61 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 
 <script>
 // ── GRAPH DATA ──
-const bfsCode=['frontera = Cola FIFO','visitados = {}','encolar(inicio); marcar(inicio)','— — — — — — — — — — —','mientras frontera no vacía:','  estado = frontera.pop()  ← EXPANDIR','  si isGoal(estado): retornar camino','  para cada sucesor:','    si sucesor ∉ visitados:','      marcar(sucesor)','      encolar(sucesor)  ← GENERAR'];
-const dfsCode=['frontera = Pila LIFO','visitados = {}','apilar(inicio)','— — — — — — — — — — —','mientras frontera no vacía:','  estado = frontera.pop()  ← EXPANDIR','  si estado ∈ visitados: continuar','  marcar(estado)','  si isGoal(estado): retornar camino','  para cada sucesor:','    si sucesor ∉ visitados:','      apilar(sucesor)  ← GENERAR'];
+const bfsCode=[
+'def breadthFirstSearch(problem):',
+'    frontera = util.Queue()          # Cola FIFO',
+'    visitados = set()',
+'    inicio = problem.getStartState()',
+'    if problem.isGoalState(inicio): return []',
+'    frontera.push((inicio, []))',
+'    visitados.add(inicio)            # marcar al ENCOLAR',
+'    while not frontera.isEmpty():',
+'        estado, camino = frontera.pop()',
+'        if problem.isGoalState(estado):',
+'            return camino',
+'        for sucesor, accion, costo in problem.getSuccessors(estado):',
+'            if sucesor not in visitados:',
+'                visitados.add(sucesor)',
+'                frontera.push((sucesor, camino + [accion]))',
+'    return []'];
+const dfsCode=[
+'def depthFirstSearch(problem):',
+'    frontera = util.Stack()          # Pila LIFO',
+'    visitados = set()',
+'    inicio = problem.getStartState()',
+'    frontera.push((inicio, []))',
+'    while not frontera.isEmpty():',
+'        estado, camino = frontera.pop()',
+'        if problem.isGoalState(estado): return camino',
+'        if estado in visitados: continue',
+'        visitados.add(estado)        # marcar al DESAPILAR',
+'        for sucesor, accion, costo in problem.getSuccessors(estado):',
+'            if sucesor not in visitados:',
+'                frontera.push((sucesor, camino + [accion]))',
+'    return []'];
 
 const NS={unvisited:{f:'#1a1a24',s:'#444',t:'#666'},frontier:{f:'rgba(251,191,36,.15)',s:'#fbbf24',t:'#fbbf24'},current:{f:'rgba(96,165,250,.15)',s:'#60a5fa',t:'#60a5fa'},visited:{f:'rgba(34,211,160,.1)',s:'#22d3a0',t:'#22d3a0'},goal:{f:'rgba(34,211,160,.2)',s:'#22d3a0',t:'#22d3a0'}};
 
 const bfsS=[
-  {ns:{A:'frontier',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'n',BC:'n',CA:'n',CG:'n'},F:['A'],V:[],g:1,e:0,act:'Inicio: encolar A y marcar visitado. nodos_generados=1.',hl:[0,1,2]},
-  {ns:{A:'current',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},F:[],V:['A'],g:1,e:1,act:'Pop A → expandir (nodos_expandidos=1). ¿Meta? No. Sucesor: B.',hl:[4,5,6]},
-  {ns:{A:'visited',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'n',CA:'n',CG:'n'},F:['B'],V:['A'],g:2,e:1,act:'B ∉ visitados → marcar B, encolar B. nodos_generados=2.',hl:[7,8,9,10]},
-  {ns:{A:'visited',B:'current',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'a',CA:'n',CG:'n'},F:[],V:['A','B'],g:2,e:2,act:'Pop B → expandir (nodos_expandidos=2). ¿Meta? No. Sucesor: C.',hl:[4,5,6]},
-  {ns:{A:'visited',B:'visited',C:'frontier',G:'unvisited'},es:{AB:'p',BC:'p',CA:'n',CG:'n'},F:['C'],V:['A','B'],g:3,e:2,act:'C ∉ visitados → marcar C, encolar C. nodos_generados=3.',hl:[7,8,9,10]},
-  {ns:{A:'visited',B:'visited',C:'current',G:'unvisited'},es:{AB:'p',BC:'p',CA:'s',CG:'a'},F:[],V:['A','B','C'],g:3,e:3,act:'Pop C → expandir. Sucesores: A (ya visitado → saltar), G → encolar.',hl:[4,5,6,7,8]},
-  {ns:{A:'visited',B:'visited',C:'visited',G:'frontier'},es:{AB:'p',BC:'p',CA:'s',CG:'p'},F:['G'],V:['A','B','C'],g:4,e:3,act:'G marcado y encolado. nodos_generados=4. A fue descartado (visitado).',hl:[9,10]},
-  {ns:{A:'visited',B:'visited',C:'visited',G:'goal'},es:{AB:'p',BC:'p',CA:'s',CG:'p'},F:[],V:['A','B','C','G'],g:4,e:4,act:'🎯 Pop G → expandir (nodos_expandidos=4). ¡META! Camino: A→B→C→G | Longitud:3 | Gen:4 | Exp:4',hl:[4,5,6]},
+  {ns:{A:'frontier',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'n',BC:'n',CA:'n',CG:'n'},F:['A'],V:[],g:1,e:0,act:'Inicio: encolar A y marcar visitado. nodos_generados=1.',hl:[1,2,3,5,6]},
+  {ns:{A:'current',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},F:[],V:['A'],g:1,e:1,act:'Pop A → expandir (nodos_expandidos=1). ¿Meta? No. Sucesor: B.',hl:[7,8,9,10,11]},
+  {ns:{A:'visited',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'n',CA:'n',CG:'n'},F:['B'],V:['A'],g:2,e:1,act:'B ∉ visitados → marcar B, encolar B. nodos_generados=2.',hl:[11,12,13,14]},
+  {ns:{A:'visited',B:'current',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'a',CA:'n',CG:'n'},F:[],V:['A','B'],g:2,e:2,act:'Pop B → expandir (nodos_expandidos=2). ¿Meta? No. Sucesor: C.',hl:[7,8,9,11]},
+  {ns:{A:'visited',B:'visited',C:'frontier',G:'unvisited'},es:{AB:'p',BC:'p',CA:'n',CG:'n'},F:['C'],V:['A','B'],g:3,e:2,act:'C ∉ visitados → marcar C, encolar C. nodos_generados=3.',hl:[11,12,13,14]},
+  {ns:{A:'visited',B:'visited',C:'current',G:'unvisited'},es:{AB:'p',BC:'p',CA:'s',CG:'a'},F:[],V:['A','B','C'],g:3,e:3,act:'Pop C → expandir. Sucesores: A (ya visitado → saltar), G → encolar.',hl:[7,8,9,11,12]},
+  {ns:{A:'visited',B:'visited',C:'visited',G:'frontier'},es:{AB:'p',BC:'p',CA:'s',CG:'p'},F:['G'],V:['A','B','C'],g:4,e:3,act:'G marcado y encolado. nodos_generados=4. A fue descartado (visitado).',hl:[12,13,14]},
+  {ns:{A:'visited',B:'visited',C:'visited',G:'goal'},es:{AB:'p',BC:'p',CA:'s',CG:'p'},F:[],V:['A','B','C','G'],g:4,e:4,act:'🎯 Pop G → expandir (nodos_expandidos=4). ¡META! Camino: A→B→C→G | Longitud:3 | Gen:4 | Exp:4',hl:[7,8,9,10]},
 ];
 
 const dfsS=[
-  {ns:{A:'frontier',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'n',BC:'n',CA:'n',CG:'n'},F:['A'],V:[],g:1,e:0,act:'Inicio: apilar A en la pila. nodos_generados=1.',hl:[0,1,2]},
-  {ns:{A:'current',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},F:[],V:[],g:1,e:1,act:'Pop A. ¿Visitado? No → marcar A. ¿Meta? No. Sucesor B → apilar.',hl:[4,5,6,7,8]},
-  {ns:{A:'visited',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'n',CA:'n',CG:'n'},F:['B'],V:['A'],g:2,e:1,act:'B apilado. nodos_generados=2. DFS va directo al fondo de la rama.',hl:[9,10,11]},
-  {ns:{A:'visited',B:'current',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'a',CA:'n',CG:'n'},F:[],V:['A'],g:2,e:2,act:'Pop B. ¿Visitado? No → marcar B. ¿Meta? No. Sucesor C → apilar.',hl:[4,5,6,7,8]},
-  {ns:{A:'visited',B:'visited',C:'frontier',G:'unvisited'},es:{AB:'p',BC:'p',CA:'n',CG:'n'},F:['C'],V:['A','B'],g:3,e:2,act:'C apilado. nodos_generados=3.',hl:[9,10,11]},
-  {ns:{A:'visited',B:'visited',C:'current',G:'unvisited'},es:{AB:'p',BC:'p',CA:'s',CG:'a'},F:[],V:['A','B'],g:3,e:3,act:'Pop C. ¿Visitado? No → marcar C. Sucesores: A (visitado → saltar), G → apilar.',hl:[4,5,6,7,8,9,10]},
-  {ns:{A:'visited',B:'visited',C:'visited',G:'frontier'},es:{AB:'p',BC:'p',CA:'s',CG:'p'},F:['G'],V:['A','B','C'],g:4,e:3,act:'G apilado. nodos_generados=4.',hl:[11]},
-  {ns:{A:'visited',B:'visited',C:'visited',G:'goal'},es:{AB:'p',BC:'p',CA:'s',CG:'p'},F:[],V:['A','B','C','G'],g:4,e:4,act:'🎯 Pop G. ¿Visitado? No → marcar. ¡META! Camino: A→B→C→G | Gen:4 | Exp:4',hl:[4,5,6,7,8]},
+  {ns:{A:'frontier',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'n',BC:'n',CA:'n',CG:'n'},F:['A'],V:[],g:1,e:0,act:'Inicio: apilar A en la pila. nodos_generados=1.',hl:[1,2,3,4]},
+  {ns:{A:'current',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},F:[],V:[],g:1,e:1,act:'Pop A. ¿Visitado? No → marcar A. ¿Meta? No. Sucesor B → apilar.',hl:[5,6,7,8,9]},
+  {ns:{A:'visited',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'n',CA:'n',CG:'n'},F:['B'],V:['A'],g:2,e:1,act:'B apilado. nodos_generados=2. DFS va directo al fondo de la rama.',hl:[10,11,12]},
+  {ns:{A:'visited',B:'current',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'a',CA:'n',CG:'n'},F:[],V:['A'],g:2,e:2,act:'Pop B. ¿Visitado? No → marcar B. ¿Meta? No. Sucesor C → apilar.',hl:[5,6,7,8,9]},
+  {ns:{A:'visited',B:'visited',C:'frontier',G:'unvisited'},es:{AB:'p',BC:'p',CA:'n',CG:'n'},F:['C'],V:['A','B'],g:3,e:2,act:'C apilado. nodos_generados=3.',hl:[10,11,12]},
+  {ns:{A:'visited',B:'visited',C:'current',G:'unvisited'},es:{AB:'p',BC:'p',CA:'s',CG:'a'},F:[],V:['A','B'],g:3,e:3,act:'Pop C. ¿Visitado? No → marcar C. Sucesores: A (visitado → saltar), G → apilar.',hl:[5,6,7,8,9,10,11]},
+  {ns:{A:'visited',B:'visited',C:'visited',G:'frontier'},es:{AB:'p',BC:'p',CA:'s',CG:'p'},F:['G'],V:['A','B','C'],g:4,e:3,act:'G apilado. nodos_generados=4.',hl:[11,12]},
+  {ns:{A:'visited',B:'visited',C:'visited',G:'goal'},es:{AB:'p',BC:'p',CA:'s',CG:'p'},F:[],V:['A','B','C','G'],g:4,e:4,act:'🎯 Pop G. ¿Visitado? No → marcar. ¡META! Camino: A→B→C→G | Gen:4 | Exp:4',hl:[5,6,7]},
 ];
 
 let algo='bfs',gCur=0,gTim=null;
@@ -617,7 +838,7 @@ function setAlgo(a){
   document.getElementById('gplay').textContent='▶';
   ['bfs','dfs'].forEach(x=>document.getElementById('a'+x).className='algo-btn'+(x===a?' active':''));
   document.getElementById('ds-title').textContent=a==='bfs'?'Cola (FIFO) — Frontera':'Pila (LIFO) — Frontera';
-  document.getElementById('code-title').textContent='Pseudocódigo — '+a.toUpperCase();
+  document.getElementById('code-title').textContent='Código Python — '+a.toUpperCase();
   renderG();
 }
 
@@ -740,37 +961,56 @@ function dStep(d){dCur=Math.max(0,Math.min(dS.length-1,dCur+d));renderD();}
 function dPlay(){if(dTim){clearInterval(dTim);dTim=null;return;}dTim=setInterval(()=>{if(dCur>=dS.length-1){clearInterval(dTim);dTim=null;return;}dCur++;renderD();},1800);}
 
 // ── UCS ──
-const ucsCode=['frontera = Cola de prioridad (min-heap)','best_g = {}  ← mejor costo por estado','insertar (inicio, g=0) con prioridad 0','best_g[inicio] = 0','— — — — — — — — — — — — —','mientras frontera no vacía:','  estado, camino, g = extraer MENOR costo','  si g > best_g[estado]: ignorar (obsoleto)','  si isGoal(estado): retornar camino','  para cada (sucesor, costo_paso):','    nuevo_g = g + costo_paso','    si nuevo_g < best_g[sucesor]:','      best_g[sucesor] = nuevo_g','      insertar (sucesor, nuevo_g) con prioridad nuevo_g'];
+const ucsCode=[
+'def uniformCostSearch(problem):',
+'    frontera = util.PriorityQueue()  # min-heap por g(n)',
+'    best_g = {}',
+'    inicio = problem.getStartState()',
+'    if problem.isGoalState(inicio): return []',
+'    frontera.push((inicio, [], 0), 0)',
+'    best_g[inicio] = 0',
+'    while not frontera.isEmpty():',
+'        estado, camino, g = frontera.pop()',
+'        if g > best_g.get(estado, float("inf")):',
+'            continue                 # entrada obsoleta',
+'        if problem.isGoalState(estado):',
+'            return camino',
+'        for sucesor, accion, step_cost in problem.getSuccessors(estado):',
+'            nuevo_g = g + step_cost',
+'            if nuevo_g < best_g.get(sucesor, float("inf")):',
+'                best_g[sucesor] = nuevo_g',
+'                frontera.push((sucesor, camino+[accion], nuevo_g), nuevo_g)',
+'    return []'];
 
 const uS=[
   {ns:{A:'frontier',B:'unvisited',C:'unvisited',D:'unvisited',G:'unvisited'},
    es:{AB:'n',AC:'n',BG:'n',CD:'n',DG:'n'},
    F:['A(0)'],V:['A→0'],g:1,e:0,cost:0,
-   act:'Inicio: insertar A con g=0 en la cola de prioridad. best_g[A]=0.',hl:[0,1,2,3]},
+   act:'Inicio: frontera.push((A,[],0), prioridad=0). best_g[A]=0.',hl:[1,2,3,5,6]},
   {ns:{A:'current',B:'frontier',C:'frontier',D:'unvisited',G:'unvisited'},
    es:{AB:'a',AC:'a',BG:'n',CD:'n',DG:'n'},
    F:['B(1)','C(1)'],V:['A→0','B→1','C→1'],g:3,e:1,cost:0,
-   act:'Pop A (g=0, menor). Expandir. Sucesores: B(g=1), C(g=1). Ambos insertados. nodos_expandidos=1.',hl:[5,6,7,8,9,10,11,12,13]},
+   act:'Pop A (g=0). g(0)≤best_g[A](0) OK. ¿Meta? No. Sucesores: B(g=1), C(g=1). Ambos insertados.',hl:[7,8,9,11,13,14,15,16,17]},
   {ns:{A:'visited',B:'current',C:'frontier',D:'unvisited',G:'unvisited'},
    es:{AB:'p',AC:'n',BG:'a',CD:'n',DG:'n'},
    F:['C(1)','G(101)'],V:['A→0','B→1','C→1','G→101'],g:4,e:2,cost:1,
-   act:'Pop B (g=1). Expandir. Sucesor: G(g=1+100=101). Insertar G(101). nodos_expandidos=2.',hl:[5,6,7,8,9,10,11,12,13]},
+   act:'Pop B (g=1). ¿Meta? No. Sucesor G: nuevo_g=1+100=101 < ∞ → best_g[G]=101, push G(101).',hl:[7,8,9,11,13,14,15,16,17]},
   {ns:{A:'visited',B:'visited',C:'current',D:'frontier',G:'frontier'},
    es:{AB:'p',AC:'p',BG:'n',CD:'a',DG:'n'},
    F:['D(2)','G(101)'],V:['A→0','B→1','C→1','G→101','D→2'],g:5,e:3,cost:1,
-   act:'Pop C (g=1). Expandir. Sucesor: D(g=1+1=2). 2 < ∞ → insertar D(2). nodos_expandidos=3.',hl:[5,6,7,8,9,10,11,12,13]},
+   act:'Pop C (g=1). ¿Meta? No. Sucesor D: nuevo_g=1+1=2 < ∞ → best_g[D]=2, push D(2).',hl:[7,8,9,11,13,14,15,16,17]},
   {ns:{A:'visited',B:'visited',C:'visited',D:'current',G:'frontier'},
    es:{AB:'p',AC:'p',BG:'n',CD:'p',DG:'a'},
    F:['G(3)','G(101)'],V:['A→0','B→1','C→1','G→101','D→2','G→3'],g:6,e:4,cost:2,
-   act:'Pop D (g=2). Expandir. Sucesor: G(g=2+1=3). 3 < 101 → actualizar best_g[G]=3, insertar G(3). nodos_expandidos=4.',hl:[5,6,7,8,9,10,11,12,13]},
+   act:'Pop D (g=2). Sucesor G: nuevo_g=2+1=3 < 101 → actualizar best_g[G]=3, push G(3).',hl:[7,8,9,11,13,14,15,16,17]},
   {ns:{A:'visited',B:'visited',C:'visited',D:'visited',G:'current'},
    es:{AB:'p',AC:'p',BG:'n',CD:'p',DG:'p'},
    F:['G(101)'],V:['A→0','B→1','C→1','G→3','D→2'],g:6,e:5,cost:3,
-   act:'Pop G (g=3). ¿g(3) > best_g[G](3)? No → expandir. ¿Meta? ¡SÍ! Camino: A→C→D→G. Costo=3.',hl:[5,6,7,8]},
+   act:'Pop G (g=3). g(3) ≤ best_g[G](3) OK. ¿Meta? ¡SÍ! Retornar camino A→C→D→G. Costo=3.',hl:[7,8,9,11,12]},
   {ns:{A:'visited',B:'visited',C:'visited',D:'visited',G:'goal'},
    es:{AB:'n',AC:'p',BG:'n',CD:'p',DG:'p'},
    F:['G(101) — descartado'],V:['A→0','B→1','C→1','G→3','D→2'],g:6,e:5,cost:3,
-   act:'🎯 ¡META encontrada! Camino óptimo: A→C→D→G | Costo: 3 | Gen: 6 | Exp: 5. La entrada G(101) queda obsoleta y se descarta.',hl:[7,8]},
+   act:'🎯 ¡META! La entrada G(101) queda: g(101) > best_g[G](3) → continue (descartada).',hl:[9,10]},
 ];
 
 function unodeStyle(id,st){
@@ -810,19 +1050,40 @@ function uStep(d){uCur=Math.max(0,Math.min(uS.length-1,uCur+d));renderU();}
 function uPlay(){if(uTim){clearInterval(uTim);uTim=null;document.getElementById('uplay').textContent='▶';return;}document.getElementById('uplay').textContent='⏸';uTim=setInterval(()=>{if(uCur>=uS.length-1){clearInterval(uTim);uTim=null;document.getElementById('uplay').textContent='▶';return;}uCur++;renderU();},1800);}
 
 // ── IDDFS ──
-const iddfsCode=['IDDFS(problema, max_depth=50):','  para limite en 0,1,2,...,max_depth:','    resultado = DLS(problema, limite)','    si resultado ≠ None: retornar resultado','— — — — — — — — — — —','DLS(problema, limite):','  pila = [(inicio, camino=[], prof=0, ruta={inicio})]','  mientras pila no vacía:','    estado,camino,prof,ruta = pila.pop()','    si isGoal(estado): retornar camino','    si prof < limite:','      para cada sucesor:','        si sucesor ∉ ruta: ← path-checking','          pila.push(sucesor, prof+1, ruta+sucesor)'];
+const iddfsCode=[
+'def iterativeDeepeningSearch(problem, max_depth=50):',
+'    for limit in range(max_depth + 1):',
+'        result = depthLimitedSearch(problem, limit)',
+'        if result is not None:',
+'            return result',
+' ',
+'def depthLimitedSearch(problem, limit):',
+'    inicio = problem.getStartState()',
+'    if problem.isGoalState(inicio): return []',
+'    frontera = util.Stack()',
+'    frontera.push((inicio, [], 0, frozenset([inicio])))',
+'    while not frontera.isEmpty():',
+'        estado, camino, prof, ruta = frontera.pop()',
+'        if problem.isGoalState(estado):',
+'            return camino',
+'        if prof < limit:',
+'            for sucesor, accion, costo in problem.getSuccessors(estado):',
+'                if sucesor not in ruta:   # path-checking',
+'                    frontera.push((sucesor, camino+[accion],',
+'                                   prof+1, ruta | {sucesor}))',
+'    return None'];
 
 const iS=[
-  {lim:0,dep:0,gen:1,ns:{A:'current',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'n',BC:'n',CA:'n',CG:'n'},F:['A(0)'],R:['A'],act:'Iteración 1: límite=0. DLS expande A (prof=0). ¿A es meta? No. prof(0) = límite(0) → NO expandir hijos. DLS retorna None.',hl:[0,1,2,3,5,6,7,8,9,10]},
-  {lim:1,dep:0,gen:2,ns:{A:'current',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},F:['B(1)'],R:['A','B'],act:'Iteración 2: límite=1. DLS expande A (prof=0). prof(0)<límite(1) → generar B. Apilar B.',hl:[0,1,2,5,6,7,8,9,10,11,12,13]},
-  {lim:1,dep:1,gen:2,ns:{A:'visited',B:'current',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'n',CA:'n',CG:'n'},F:[],R:['A','B'],act:'Pop B (prof=1). ¿Meta? No. prof(1)=límite(1) → NO expandir. DLS retorna None. Límite insuficiente.',hl:[5,7,8,9,10]},
-  {lim:2,dep:0,gen:3,ns:{A:'current',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},F:['B(1)'],R:['A','B'],act:'Iteración 3: límite=2. DLS expande A (prof=0). prof<2 → generar B. Apilar B.',hl:[0,1,2,5,6,7,8,9,10,11,12,13]},
-  {lim:2,dep:1,gen:4,ns:{A:'visited',B:'current',C:'frontier',G:'unvisited'},es:{AB:'p',BC:'a',CA:'n',CG:'n'},F:['C(2)'],R:['A','B','C'],act:'Pop B (prof=1). ¿Meta? No. prof(1)<límite(2) → generar C. C ∉ ruta → apilar C(prof=2).',hl:[5,7,8,9,10,11,12,13]},
-  {lim:2,dep:2,gen:4,ns:{A:'visited',B:'visited',C:'current',G:'unvisited'},es:{AB:'p',BC:'p',CA:'n',CG:'n'},F:[],R:['A','B','C'],act:'Pop C (prof=2). ¿Meta? No. prof(2)=límite(2) → NO expandir (A y G no se generan). DLS retorna None.',hl:[5,7,8,9,10]},
-  {lim:3,dep:0,gen:5,ns:{A:'current',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},F:['B(1)'],R:['A','B'],act:'Iteración 4: límite=3. DLS expande A. prof(0)<3 → generar B.',hl:[0,1,2,5,6,7,8,9,10,11,12,13]},
-  {lim:3,dep:1,gen:6,ns:{A:'visited',B:'current',C:'frontier',G:'unvisited'},es:{AB:'p',BC:'a',CA:'n',CG:'n'},F:['C(2)'],R:['A','B','C'],act:'Pop B (prof=1). prof<3 → generar C. Apilar C(prof=2).',hl:[5,7,8,9,10,11,12,13]},
-  {lim:3,dep:2,gen:8,ns:{A:'visited',B:'visited',C:'current',G:'frontier'},es:{AB:'p',BC:'p',CA:'s',CG:'a'},F:['G(3)'],R:['A','B','C'],act:'Pop C (prof=2). prof<3 → sucesores: A ∈ ruta → saltar (path-check ✓). G ∉ ruta → apilar G(prof=3).',hl:[5,7,8,9,10,11,12,13]},
-  {lim:3,dep:3,gen:8,ns:{A:'visited',B:'visited',C:'visited',G:'goal'},es:{AB:'p',BC:'p',CA:'s',CG:'p'},F:[],R:['A','B','C','G'],act:'🎯 Pop G (prof=3). ¿G es meta? ¡SÍ! DLS retorna camino. IDDFS retorna: A→B→C→G. Longitud: 3. Total generados: 10.',hl:[5,7,8,9]},
+  {lim:0,dep:0,gen:1,ns:{A:'current',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'n',BC:'n',CA:'n',CG:'n'},F:['A(0)'],R:['A'],act:'Iteración 1: limit=0. DLS expande A (prof=0). ¿Meta? No. prof(0) = limit(0) → NO entrar al for. DLS retorna None.',hl:[0,1,2,6,9,10,11,12,13,15]},
+  {lim:1,dep:0,gen:2,ns:{A:'current',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},F:['B(1)'],R:['A','B'],act:'Iteración 2: limit=1. DLS: expande A, prof(0)<1 → for sucesores. B ∉ ruta → frontera.push(B, prof=1, ruta={A,B}).',hl:[0,1,2,6,9,10,11,12,13,15,16,17,18,19]},
+  {lim:1,dep:1,gen:2,ns:{A:'visited',B:'current',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'n',CA:'n',CG:'n'},F:[],R:['A','B'],act:'Pop B (prof=1). ¿Meta? No. prof(1) = limit(1) → NO expandir. Pila vacía. DLS retorna None. Límite insuficiente.',hl:[11,12,13,15]},
+  {lim:2,dep:0,gen:3,ns:{A:'current',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},F:['B(1)'],R:['A','B'],act:'Iteración 3: limit=2. DLS: expande A, prof(0)<2 → push B.',hl:[0,1,2,6,9,10,11,12,13,15,16,17,18,19]},
+  {lim:2,dep:1,gen:4,ns:{A:'visited',B:'current',C:'frontier',G:'unvisited'},es:{AB:'p',BC:'a',CA:'n',CG:'n'},F:['C(2)'],R:['A','B','C'],act:'Pop B (prof=1). ¿Meta? No. prof(1)<2 → for sucesores. C ∉ ruta → push C(prof=2).',hl:[11,12,13,15,16,17,18,19]},
+  {lim:2,dep:2,gen:4,ns:{A:'visited',B:'visited',C:'current',G:'unvisited'},es:{AB:'p',BC:'p',CA:'n',CG:'n'},F:[],R:['A','B','C'],act:'Pop C (prof=2). ¿Meta? No. prof(2) = limit(2) → NO expandir (A y G no se generan). DLS retorna None.',hl:[11,12,13,15]},
+  {lim:3,dep:0,gen:5,ns:{A:'current',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},F:['B(1)'],R:['A','B'],act:'Iteración 4: limit=3. DLS: expande A (prof=0<3) → push B.',hl:[0,1,2,6,9,10,11,12,13,15,16,17,18,19]},
+  {lim:3,dep:1,gen:6,ns:{A:'visited',B:'current',C:'frontier',G:'unvisited'},es:{AB:'p',BC:'a',CA:'n',CG:'n'},F:['C(2)'],R:['A','B','C'],act:'Pop B (prof=1<3). C ∉ ruta → push C(prof=2).',hl:[11,12,13,15,16,17,18,19]},
+  {lim:3,dep:2,gen:8,ns:{A:'visited',B:'visited',C:'current',G:'frontier'},es:{AB:'p',BC:'p',CA:'s',CG:'a'},F:['G(3)'],R:['A','B','C'],act:'Pop C (prof=2<3). Sucesores: A ∈ ruta → saltar (path-checking ✓). G ∉ ruta → push G(prof=3).',hl:[11,12,13,15,16,17,18,19]},
+  {lim:3,dep:3,gen:8,ns:{A:'visited',B:'visited',C:'visited',G:'goal'},es:{AB:'p',BC:'p',CA:'s',CG:'p'},F:[],R:['A','B','C','G'],act:'🎯 Pop G (prof=3). ¿Meta? ¡SÍ! DLS retorna camino. IDDFS retorna: A→B→C→G. Longitud: 3. Total gen: 10.',hl:[3,4,11,12,13,14]},
 ];
 
 function inodeStyle(id,st){
@@ -861,6 +1122,233 @@ function renderI(){
 }
 function iStep(d){iCur=Math.max(0,Math.min(iS.length-1,iCur+d));renderI();}
 function iPlay(){if(iTim){clearInterval(iTim);iTim=null;document.getElementById('iplay').textContent='▶';return;}document.getElementById('iplay').textContent='⏸';iTim=setInterval(()=>{if(iCur>=iS.length-1){clearInterval(iTim);iTim=null;document.getElementById('iplay').textContent='▶';return;}iCur++;renderI();},1800);}
+
+// ── ÁRBOL (sin visitados) ──
+const atNS={unvisited:{f:'#1a1a24',s:'#444',t:'#666'},frontier:{f:'rgba(251,191,36,.15)',s:'#fbbf24',t:'#fbbf24'},current:{f:'rgba(248,113,113,.15)',s:'#f87171',t:'#f87171'},visited:{f:'rgba(248,113,113,.08)',s:'#555',t:'#555'},goal:{f:'rgba(34,211,160,.2)',s:'#22d3a0',t:'#22d3a0'},dup:{f:'rgba(248,113,113,.25)',s:'#f87171',t:'#f87171'}};
+
+const bfsArbolSteps=[
+  {ns:{A:'frontier',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'n',BC:'n',CA:'n',CG:'n'},
+   F:['A'],g:1,e:0,dup:0,act:'Inicio: encolar A. SIN marcar visitados. Nodos_generados=1.',
+   tree:[{id:'A0',label:'A',x:160,y:20,parent:null,dup:false}]},
+  {ns:{A:'current',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},
+   F:['B'],g:2,e:1,dup:0,act:'Pop A. ¿Meta? No. Sucesor: B → encolar. SIN verificar visitados.',
+   tree:[{id:'A0',label:'A',x:160,y:20,parent:null,dup:false},{id:'B1',label:'B',x:160,y:70,parent:'A0',dup:false}]},
+  {ns:{A:'visited',B:'current',C:'unvisited',G:'unvisited'},es:{AB:'p',BC:'a',CA:'n',CG:'n'},
+   F:['C'],g:3,e:2,dup:0,act:'Pop B. ¿Meta? No. Sucesor: C → encolar.',
+   tree:[{id:'A0',label:'A',x:160,y:20,parent:null,dup:false},{id:'B1',label:'B',x:160,y:70,parent:'A0',dup:false},{id:'C2',label:'C',x:160,y:120,parent:'B1',dup:false}]},
+  {ns:{A:'frontier',B:'visited',C:'current',G:'frontier'},es:{AB:'p',BC:'p',CA:'a',CG:'a'},
+   F:['A','G'],g:5,e:3,dup:1,act:'Pop C. ¿Meta? No. Sucesores: A y G. SIN visitados → A se encola de nuevo. ¡DUPLICADO! nodos_generados=5.',
+   tree:[{id:'A0',label:'A',x:160,y:20,parent:null,dup:false},{id:'B1',label:'B',x:160,y:70,parent:'A0',dup:false},{id:'C2',label:'C',x:160,y:120,parent:'B1',dup:false},{id:'A3',label:'A ⚠',x:80,y:170,parent:'C2',dup:true},{id:'G4',label:'G',x:240,y:170,parent:'C2',dup:false}]},
+  {ns:{A:'current',B:'visited',C:'visited',G:'frontier'},es:{AB:'n',BC:'p',CA:'p',CG:'p'},
+   F:['G','B'],g:7,e:4,dup:1,act:'Pop A (duplicado). ¿Meta? No. Sucesor: B → encolar de nuevo. Otro duplicado potencial.',
+   tree:[{id:'A0',label:'A',x:160,y:20,parent:null,dup:false},{id:'B1',label:'B',x:160,y:70,parent:'A0',dup:false},{id:'C2',label:'C',x:160,y:120,parent:'B1',dup:false},{id:'A3',label:'A ⚠',x:80,y:170,parent:'C2',dup:true},{id:'G4',label:'G',x:240,y:170,parent:'C2',dup:false},{id:'B5',label:'B ⚠',x:80,y:220,parent:'A3',dup:true}]},
+  {ns:{A:'visited',B:'visited',C:'visited',G:'goal'},es:{AB:'p',BC:'p',CA:'p',CG:'p'},
+   F:['B'],g:7,e:5,dup:1,act:'🎯 Pop G. ¡META! Camino: A→B→C→G. Longitud:3. Generados:7 vs BFS grafo:4. +3 nodos extra por duplicados.',
+   tree:[{id:'A0',label:'A',x:160,y:20,parent:null,dup:false},{id:'B1',label:'B',x:160,y:70,parent:'A0',dup:false},{id:'C2',label:'C',x:160,y:120,parent:'B1',dup:false},{id:'A3',label:'A ⚠',x:80,y:170,parent:'C2',dup:true},{id:'G4',label:'G ✓',x:240,y:170,parent:'C2',dup:false},{id:'B5',label:'B ⚠',x:80,y:220,parent:'A3',dup:true}]},
+];
+
+const dfsArbolSteps=[
+  {ns:{A:'frontier',B:'unvisited',C:'unvisited',G:'unvisited'},es:{AB:'n',BC:'n',CA:'n',CG:'n'},
+   F:['A'],g:1,e:0,dup:0,act:'Inicio: apilar A. SIN visitados.',
+   tree:[{id:'A0',label:'A',x:160,y:20,parent:null,dup:false}]},
+  {ns:{A:'current',B:'frontier',C:'unvisited',G:'unvisited'},es:{AB:'a',BC:'n',CA:'n',CG:'n'},
+   F:['B'],g:2,e:1,dup:0,act:'Pop A. ¿Meta? No. Sucesor: B → apilar. Sin verificar visitados.',
+   tree:[{id:'A0',label:'A',x:160,y:20,parent:null,dup:false},{id:'B1',label:'B',x:160,y:70,parent:'A0',dup:false}]},
+  {ns:{A:'visited',B:'current',C:'frontier',G:'unvisited'},es:{AB:'p',BC:'a',CA:'n',CG:'n'},
+   F:['C'],g:3,e:2,dup:0,act:'Pop B. ¿Meta? No. Sucesor: C → apilar.',
+   tree:[{id:'A0',label:'A',x:160,y:20,parent:null,dup:false},{id:'B1',label:'B',x:160,y:70,parent:'A0',dup:false},{id:'C2',label:'C',x:160,y:120,parent:'B1',dup:false}]},
+  {ns:{A:'frontier',B:'visited',C:'current',G:'frontier'},es:{AB:'p',BC:'p',CA:'a',CG:'a'},
+   F:['G','A'],g:5,e:3,dup:1,act:'Pop C. ¿Meta? No. Sucesores en orden: A y G. SIN visitados → apilar G luego A. A es DUPLICADO.',
+   tree:[{id:'A0',label:'A',x:160,y:20,parent:null,dup:false},{id:'B1',label:'B',x:160,y:70,parent:'A0',dup:false},{id:'C2',label:'C',x:160,y:120,parent:'B1',dup:false},{id:'G3',label:'G',x:240,y:170,parent:'C2',dup:false},{id:'A4',label:'A ⚠',x:80,y:170,parent:'C2',dup:true}]},
+  {ns:{A:'current',B:'visited',C:'visited',G:'frontier'},es:{AB:'n',BC:'p',CA:'p',CG:'p'},
+   F:['G','B'],g:6,e:4,dup:1,act:'Pop A (tope de pila = duplicado). ¿Meta? No. Sucesor B → apilar. Ciclo: va a explorar B de nuevo.',
+   tree:[{id:'A0',label:'A',x:160,y:20,parent:null,dup:false},{id:'B1',label:'B',x:160,y:70,parent:'A0',dup:false},{id:'C2',label:'C',x:160,y:120,parent:'B1',dup:false},{id:'G3',label:'G',x:240,y:170,parent:'C2',dup:false},{id:'A4',label:'A ⚠',x:80,y:170,parent:'C2',dup:true},{id:'B5',label:'B ⚠',x:80,y:220,parent:'A4',dup:true}]},
+  {ns:{A:'visited',B:'current',C:'visited',G:'goal'},es:{AB:'p',BC:'p',CA:'p',CG:'p'},
+   F:['G'],g:6,e:5,dup:1,act:'Pop B (duplicado). DFS descartaría expandir pero sin visitados no sabe que es duplicado. Pop G a continuación.',
+   tree:[{id:'A0',label:'A',x:160,y:20,parent:null,dup:false},{id:'B1',label:'B',x:160,y:70,parent:'A0',dup:false},{id:'C2',label:'C',x:160,y:120,parent:'B1',dup:false},{id:'G3',label:'G ✓',x:240,y:170,parent:'C2',dup:false},{id:'A4',label:'A ⚠',x:80,y:170,parent:'C2',dup:true},{id:'B5',label:'B ⚠',x:80,y:220,parent:'A4',dup:true}]},
+  {ns:{A:'visited',B:'visited',C:'visited',G:'goal'},es:{AB:'p',BC:'p',CA:'p',CG:'p'},
+   F:[],g:6,e:6,dup:1,act:'🎯 Pop G. ¡META! Camino: A→B→C→G. Longitud:3. Generados:6 vs DFS grafo:4. Sin visitados genera +2 nodos extra.',
+   tree:[{id:'A0',label:'A',x:160,y:20,parent:null,dup:false},{id:'B1',label:'B',x:160,y:70,parent:'A0',dup:false},{id:'C2',label:'C',x:160,y:120,parent:'B1',dup:false},{id:'G3',label:'G ✓',x:240,y:170,parent:'C2',dup:false},{id:'A4',label:'A ⚠',x:80,y:170,parent:'C2',dup:true},{id:'B5',label:'B ⚠',x:80,y:220,parent:'A4',dup:true}]},
+];
+
+let atAlgo='bfs', atCur=0, atTim=null;
+
+function setArbol(a){
+  atAlgo=a; atCur=0; clearInterval(atTim); atTim=null;
+  document.getElementById('at-play').textContent='▶';
+  ['bfs','dfs'].forEach(x=>document.getElementById('at-'+x).className='algo-btn'+(x===a?' active':''));
+  document.getElementById('at-ds-title').textContent=a==='bfs'?'Cola (FIFO) — Frontera SIN filtro de visitados':'Pila (LIFO) — Frontera SIN filtro de visitados';
+  document.getElementById('arbol-warning').textContent=a==='bfs'?'BFS árbol: en BFS múltiples caminos llegan al mismo estado en el mismo nivel. Sin visitados, el estado A se encola de NUEVO cuando C lo genera como sucesor (ciclo A→B→C→A).':'DFS árbol: sin visitados DFS puede seguir ciclos indefinidamente. El estado A se apila de nuevo desde C, generando una rama infinita A→B→C→A→B→C→A...';
+  document.getElementById('at-res1-name').textContent=a==='bfs'?'BFS grafo':'DFS grafo';
+  document.getElementById('at-res2-name').textContent=a==='bfs'?'BFS árbol':'DFS árbol';
+  renderAT();
+}
+
+function atNodeStyle(id,st){
+  const el=document.getElementById('at-'+id); if(!el)return;
+  const s=atNS[st];
+  el.querySelector('circle').setAttribute('fill',s.f);
+  el.querySelector('circle').setAttribute('stroke',s.s);
+  el.querySelector('text').setAttribute('fill',s.t);
+}
+function atEdgeStyle(id,st){
+  const el=document.getElementById('at-'+id); if(!el)return;
+  const c={n:'#333',a:'#f87171',p:'#22d3a0',s:'#222'};
+  const m={n:'mat',a:'mat-r',p:'mat-p',s:'mat'};
+  el.setAttribute('stroke',c[st]);
+  el.setAttribute('marker-end','url(#'+m[st]+')');
+}
+
+function drawTree(nodes){
+  const svg=document.getElementById('tree-svg');
+  svg.innerHTML='';
+  if(!nodes||!nodes.length)return;
+  const maxY=Math.max(...nodes.map(n=>n.y));
+  const h=Math.max(180,maxY+40);
+  svg.setAttribute('viewBox',`0 0 320 ${h}`);
+  svg.setAttribute('height',Math.min(240,h));
+  nodes.forEach(n=>{
+    if(n.parent){
+      const par=nodes.find(p=>p.id===n.parent);
+      if(par){
+        const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1',par.x); line.setAttribute('y1',par.y+14);
+        line.setAttribute('x2',n.x); line.setAttribute('y2',n.y-14);
+        line.setAttribute('stroke',n.dup?'#f87171':'#22d3a0');
+        line.setAttribute('stroke-width','1.5');
+        line.setAttribute('stroke-dasharray',n.dup?'4,3':'none');
+        svg.appendChild(line);
+      }
+    }
+  });
+  nodes.forEach(n=>{
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',n.x); c.setAttribute('cy',n.y); c.setAttribute('r','14');
+    c.setAttribute('fill',n.dup?'rgba(248,113,113,.2)':n.label.includes('✓')?'rgba(34,211,160,.2)':'rgba(255,255,255,.05)');
+    c.setAttribute('stroke',n.dup?'#f87171':n.label.includes('✓')?'#22d3a0':'#555');
+    c.setAttribute('stroke-width','1.5');
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',n.x); t.setAttribute('y',n.y+4);
+    t.setAttribute('text-anchor','middle');
+    t.setAttribute('font-size','10'); t.setAttribute('font-weight','700');
+    t.setAttribute('fill',n.dup?'#f87171':n.label.includes('✓')?'#22d3a0':'#aaa');
+    t.setAttribute('font-family','Sora,sans-serif');
+    t.textContent=n.label.replace(' ⚠','').replace(' ✓','');
+    if(n.dup){
+      const w=document.createElementNS('http://www.w3.org/2000/svg','text');
+      w.setAttribute('x',n.x+16); w.setAttribute('y',n.y+4);
+      w.setAttribute('font-size','12'); w.setAttribute('fill','#f87171');
+      w.textContent='⚠'; svg.appendChild(w);
+    }
+    g.appendChild(c); g.appendChild(t); svg.appendChild(g);
+  });
+}
+
+function renderAT(){
+  const steps=atAlgo==='bfs'?bfsArbolSteps:dfsArbolSteps;
+  const s=steps[atCur];
+  ['A','B','C','G'].forEach(n=>atNodeStyle(n,s.ns[n]||'unvisited'));
+  ['AB','BC','CA','CG'].forEach(e=>atEdgeStyle(e,s.es[e]||'n'));
+  const fEl=document.getElementById('at-F'); fEl.innerHTML='';
+  if(s.F.length){
+    s.F.forEach((x,i)=>{
+      const el=document.createElement('div');
+      const isDup=x.includes('⚠')||atCur>2&&x==='A';
+      el.className='ds-item'+(atAlgo==='bfs'&&i===0?' cur':atAlgo==='dfs'&&i===s.F.length-1?' cur':'');
+      if(isDup) el.style.cssText='background:rgba(248,113,113,.15);border-color:#f87171;color:#f87171';
+      el.textContent=x+(isDup?' ⚠':''); fEl.appendChild(el);
+    });
+  } else { fEl.innerHTML='<span class="ds-empty">vacía</span>'; }
+  document.getElementById('at-cg').textContent=s.g;
+  document.getElementById('at-ce').textContent=s.e;
+  document.getElementById('at-dup').textContent=s.dup;
+  document.getElementById('at-act').textContent=s.act;
+  document.getElementById('at-cnt').textContent=(atCur+1)+'/'+steps.length;
+  document.getElementById('at-prev').disabled=atCur===0;
+  document.getElementById('at-next').disabled=atCur===steps.length-1;
+  drawTree(s.tree);
+}
+function atStep(d){atCur=Math.max(0,Math.min((atAlgo==='bfs'?bfsArbolSteps:dfsArbolSteps).length-1,atCur+d));renderAT();}
+function atPlay(){
+  if(atTim){clearInterval(atTim);atTim=null;document.getElementById('at-play').textContent='▶';return;}
+  document.getElementById('at-play').textContent='⏸';
+  atTim=setInterval(()=>{const len=(atAlgo==='bfs'?bfsArbolSteps:dfsArbolSteps).length;if(atCur>=len-1){clearInterval(atTim);atTim=null;document.getElementById('at-play').textContent='▶';return;}atCur++;renderAT();},1800);
+}
+
+// ── JARRAS CODE ──
+const jarrasCode=[
+'class JarrasProblem:',
+'    def __init__(self, capA=5, capB=3, meta=(2,0)):',
+'        self.capA = capA  # jarra grande',
+'        self.capB = capB  # jarra pequeña',
+'        self.meta = meta',
+' ',
+'    def getStartState(self): return (0, 0)',
+'    def isGoalState(self, s): return s == self.meta',
+' ',
+'    def getSuccessors(self, state):',
+'        a, b = state',
+'        sucesores = []',
+'        # LlenarA, LlenarB',
+'        sucesores.append(((self.capA, b), "LlenarA", 1))',
+'        sucesores.append(((a, self.capB), "LlenarB", 1))',
+'        # VaciarA, VaciarB',
+'        sucesores.append(((0, b), "VaciarA", 1))',
+'        sucesores.append(((a, 0), "VaciarB", 1))',
+'        # AhaciaB: pasar de grande a pequeña',
+'        mover = min(a, self.capB - b)',
+'        sucesores.append(((a-mover, b+mover), "AhaciaB", 1))',
+'        # BhaciaA: pasar de pequeña a grande',
+'        mover2 = min(b, self.capA - a)',
+'        sucesores.append(((a+mover2, b-mover2), "BhaciaA", 1))',
+'        return sucesores',
+' ',
+'    def getCostOfActions(self, actions):',
+'        return len(actions) if actions else 0'];
+
+document.getElementById('jcode').innerHTML=jarrasCode.map(l=>`<div class="codeline">${l.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`).join('');
+
+// ── DEVS CODE ──
+const devsCode=[
+'class AdministradoresHackers:',
+'    TOTAL = 3',
+'    CAP   = 2',
+' ',
+'    def getStartState(self): return (3, 3, 0)',
+'    def isGoalState(self, s): return s == (0, 0, 1)',
+' ',
+'    def es_estado_valido(self, state):',
+'        ai, bi, _ = state',
+'        T = self.TOTAL',
+'        if not (0 <= ai <= T and 0 <= bi <= T): return False',
+'        if ai > 0 and bi > ai:          return False  # inestable',
+'        if (T-ai)>0 and (T-bi)>(T-ai): return False  # seguro',
+'        return True',
+' ',
+'    def getSuccessors(self, state):',
+'        ai, bi, lado = state',
+'        sucesores = []',
+'        for da in range(self.CAP + 1):',
+'            for db in range(self.CAP + 1):',
+'                if not (1 <= da+db <= self.CAP): continue',
+'                if lado == 0:  # cruzar → seguro',
+'                    if da > ai or db > bi: continue',
+'                    nuevo = (ai-da, bi-db, 1)',
+'                    acc = f"Cruzar({da}dev,{db}bug)->Seguro"',
+'                else:          # regresar → inestable',
+'                    ds,bs = self.TOTAL-ai, self.TOTAL-bi',
+'                    if da > ds or db > bs: continue',
+'                    nuevo = (ai+da, bi+db, 0)',
+'                    acc = f"Regresar({da}dev,{db}bug)->Inestable"',
+'                if self.es_estado_valido(nuevo):',
+'                    sucesores.append((nuevo, acc, 1))',
+'        return sucesores',
+' ',
+'    def getCostOfActions(self, actions):',
+'        return len(actions) if actions else 0'];
+
+document.getElementById('dcode').innerHTML=devsCode.map(l=>`<div class="codeline">${l.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`).join('');
 
 // ── FLASHCARDS ──
 const cards=[
@@ -955,12 +1443,12 @@ function show(id,btn){
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('p-'+id).classList.add('active');
   btn.classList.add('active');
-  [gTim,jTim,dTim,uTim,iTim].forEach(t=>clearInterval(t));gTim=jTim=dTim=uTim=iTim=null;
+  [gTim,jTim,dTim,uTim,iTim,atTim].forEach(t=>clearInterval(t));gTim=jTim=dTim=uTim=iTim=atTim=null;
   document.getElementById('gplay').textContent='▶';
 }
 
 // INIT
-setAlgo('bfs'); renderJ(); renderD(); renderF(); renderQ(); renderU(); renderI();
+setAlgo('bfs'); renderJ(); renderD(); renderF(); renderQ(); renderU(); renderI(); setArbol('bfs');
 </script>
 </body>
 </html>
